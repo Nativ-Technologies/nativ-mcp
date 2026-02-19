@@ -26,16 +26,16 @@ Sign up at [dashboard.usenativ.com](https://dashboard.usenativ.com), go to **Set
 
 ### 2. Install
 
-#### Claude Code / Claude Desktop
+Add to your MCP configuration:
 
-Add to your MCP configuration (`~/.claude/claude_desktop_config.json`):
+#### Claude Code / Claude Desktop (`~/.claude/claude_desktop_config.json`)
 
 ```json
 {
   "mcpServers": {
     "nativ": {
-      "command": "uvx",
-      "args": ["nativ-mcp"],
+      "command": "npx",
+      "args": ["-y", "nativ-mcp"],
       "env": {
         "NATIV_API_KEY": "nativ_your_api_key_here"
       }
@@ -44,16 +44,14 @@ Add to your MCP configuration (`~/.claude/claude_desktop_config.json`):
 }
 ```
 
-#### Cursor
-
-Add to your Cursor MCP settings (`.cursor/mcp.json` in your project or global config):
+#### Cursor (`.cursor/mcp.json` in your project or `~/.cursor/mcp.json` globally)
 
 ```json
 {
   "mcpServers": {
     "nativ": {
-      "command": "uvx",
-      "args": ["nativ-mcp"],
+      "command": "npx",
+      "args": ["-y", "nativ-mcp"],
       "env": {
         "NATIV_API_KEY": "nativ_your_api_key_here"
       }
@@ -64,14 +62,12 @@ Add to your Cursor MCP settings (`.cursor/mcp.json` in your project or global co
 
 #### Windsurf
 
-Add to your Windsurf MCP configuration:
-
 ```json
 {
   "mcpServers": {
     "nativ": {
-      "command": "uvx",
-      "args": ["nativ-mcp"],
+      "command": "npx",
+      "args": ["-y", "nativ-mcp"],
       "env": {
         "NATIV_API_KEY": "nativ_your_api_key_here"
       }
@@ -80,7 +76,29 @@ Add to your Windsurf MCP configuration:
 }
 ```
 
-> **Note:** `uvx` runs the package directly from PyPI without needing a manual install. If you prefer, install it first with `pip install nativ-mcp` and use `"command": "nativ-mcp"` instead.
+> **Note:** `npx` auto-downloads the package on first run — no manual install needed. If `uv` isn't already on your machine, it will be installed automatically on first launch.
+>
+> <details><summary>Alternative: use <code>uvx</code> directly</summary>
+>
+> If you already have `uv` installed and prefer to skip the npm wrapper:
+>
+> ```json
+> {
+>   "mcpServers": {
+>     "nativ": {
+>       "command": "uvx",
+>       "args": ["nativ-mcp"],
+>       "env": {
+>         "NATIV_API_KEY": "nativ_your_api_key_here"
+>       }
+>     }
+>   }
+> }
+> ```
+>
+> **macOS tip:** If you get `spawn uvx ENOENT` in Cursor or Claude Desktop, GUI apps don't inherit your shell PATH. Use the full path (e.g. `"command": "/Users/you/.local/bin/uvx"`) or wrap in a login shell: `"command": "/bin/sh", "args": ["-lc", "uvx nativ-mcp"]`.
+>
+> </details>
 
 ### 3. Use it
 
