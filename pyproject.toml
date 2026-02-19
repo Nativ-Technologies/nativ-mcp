@@ -1,0 +1,52 @@
+[project]
+name = "nativ-mcp"
+version = "0.1.0"
+description = "MCP server for Nativ — AI-powered localization platform. Translate text, manage translation memory, and access style guides from any MCP-compatible AI tool."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Nativ", email = "hello@usenativ.com" },
+]
+keywords = [
+    "mcp",
+    "localization",
+    "translation",
+    "i18n",
+    "l10n",
+    "nativ",
+    "ai",
+    "translation-memory",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Internationalization",
+    "Topic :: Software Development :: Localization",
+]
+dependencies = [
+    "mcp[cli]>=1.2.0",
+    "httpx>=0.27.0",
+]
+
+[project.scripts]
+nativ-mcp = "nativ_mcp.server:main"
+
+[project.urls]
+Homepage = "https://usenativ.com"
+Repository = "https://github.com/nativ-ai/nativ-mcp"
+Documentation = "https://github.com/nativ-ai/nativ-mcp#readme"
+Issues = "https://github.com/nativ-ai/nativ-mcp/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nativ_mcp"]
