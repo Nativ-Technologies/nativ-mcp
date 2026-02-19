@@ -1,5 +1,7 @@
 # Nativ MCP Server
 
+mcp-name: io.github.Nativ-Technologies/nativ
+
 AI-powered localization for any MCP-compatible tool — [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Cursor](https://cursor.sh), [Windsurf](https://codeium.com/windsurf), and more.
 
 [Nativ](https://usenativ.com) is a localization platform that uses AI to translate content while respecting your brand voice, translation memory, glossaries, and style guides. This MCP server brings Nativ's full localization engine into your AI coding workflow.
