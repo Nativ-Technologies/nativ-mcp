@@ -7,6 +7,7 @@ AI-powered localization for any MCP-compatible tool — [Claude Code](https://do
 [Nativ](https://usenativ.com) is a localization platform that uses AI to translate content while respecting your brand voice, translation memory, glossaries, and style guides. This MCP server brings Nativ's full localization engine into your AI coding workflow.
 
 <a href="https://smithery.ai/server/@nativ-ai/nativ-mcp"><img alt="Smithery" src="https://smithery.ai/badge/@nativ-ai/nativ-mcp"></a>
+[![MCP Badge](https://lobehub.com/badge/mcp/nativ-ai-nativ-mcp)](https://lobehub.com/mcp/nativ-ai-nativ-mcp)
 
 ---
 
