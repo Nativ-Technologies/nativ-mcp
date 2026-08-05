@@ -123,6 +123,9 @@ Ask your AI assistant things like:
 | `get_translation_memory_stats` | Get TM statistics — total entries, sources, and breakdown |
 | `get_style_guides` | List all style guides with their content and status |
 | `get_brand_voice` | Get the brand voice prompt that shapes all translations |
+| `extract_image_text` | Extract on-image text segments (OCR) in reading order |
+| `localize_image` | Replace on-image text with translations in place, keeping layout and graphics intact |
+| `check_image_cultural_fit` | Flag cultural-sensitivity issues in an image across target markets |
 
 ## Resources
 
@@ -221,7 +224,7 @@ cd nativ-mcp
 # Set up environment
 uv venv
 source .venv/bin/activate
-uv pip install -e ".[dev]"
+uv pip install -e .
 
 # Run the server (for testing)
 NATIV_API_KEY=nativ_xxx nativ-mcp

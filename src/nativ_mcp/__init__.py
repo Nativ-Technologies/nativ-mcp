@@ -1,3 +1,3 @@
-"""Nativ MCP Server — AI-powered localization from any MCP-compatible tool."""
+"""Nativ MCP Server - локализация на базе ИИ для любого инструмента с поддержкой MCP."""
 
-__version__ = "0.1.3"
+__version__ = "0.2.1"

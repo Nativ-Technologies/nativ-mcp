@@ -9,11 +9,12 @@ MCP-compatible AI tool (Claude Code, Cursor, Windsurf, etc.).
 import os
 import sys
 import json
+import base64
 import logging
 from typing import Any, Optional
 
 import httpx
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 logger = logging.getLogger("nativ-mcp")
@@ -33,7 +34,13 @@ class NativClient:
         self.headers = {
             "X-API-Key": api_key,
             "Content-Type": "application/json",
-            "User-Agent": "nativ-mcp/0.1.0",
+            "User-Agent": "nativ-mcp/0.2.1",
+        }
+        # Multipart requests must not set Content-Type; httpx sets the
+        # boundary automatically when files are provided.
+        self.multipart_headers = {
+            "X-API-Key": api_key,
+            "User-Agent": "nativ-mcp/0.2.1",
         }
 
     async def _request(
@@ -51,6 +58,26 @@ class NativClient:
                 headers=self.headers,
                 json=json_body,
                 params=params,
+            )
+            if resp.status_code == 402:
+                raise RuntimeError("Insufficient Nativ credits. Top up at https://dashboard.usenativ.com")
+            resp.raise_for_status()
+            return resp.json()
+
+    async def _request_multipart(
+        self,
+        path: str,
+        *,
+        files: Any,
+        data: Any | None = None,
+    ) -> dict[str, Any]:
+        # Image generation can take a while, so use a generous timeout.
+        async with httpx.AsyncClient(timeout=300.0) as client:
+            resp = await client.post(
+                f"{self.base_url}{path}",
+                headers=self.multipart_headers,
+                files=files,
+                data=data,
             )
             if resp.status_code == 402:
                 raise RuntimeError("Insufficient Nativ credits. Top up at https://dashboard.usenativ.com")
@@ -175,6 +202,50 @@ class NativClient:
     async def get_combined_prompt(self) -> dict[str, Any]:
         return await self._request("GET", "/style-guide/combined")
 
+    # -- Image --------------------------------------------------------------
+
+    async def extract_image_segments(
+        self, image_bytes: bytes, filename: str, content_type: str
+    ) -> dict[str, Any]:
+        files = {"file": (filename, image_bytes, content_type)}
+        return await self._request_multipart("/text/extract-segments", files=files)
+
+    async def localize_image(
+        self,
+        image_bytes: bytes,
+        filename: str,
+        content_type: str,
+        *,
+        replacements_json: str,
+        language_code: str,
+        num_images: int = 1,
+        output_format: str = "png",
+    ) -> dict[str, Any]:
+        files = {"file": (filename, image_bytes, content_type)}
+        data = {
+            "replacements": replacements_json,
+            "language_code": language_code,
+            "output_format": output_format,
+            "tool": "api",
+            "num_images": str(num_images),
+        }
+        return await self._request_multipart("/image/localize", files=files, data=data)
+
+    async def inspect_image(
+        self,
+        image_bytes: bytes,
+        filename: str,
+        content_type: str,
+        *,
+        countries: list[str] | None = None,
+    ) -> dict[str, Any]:
+        files = {"file": (filename, image_bytes, content_type)}
+        # httpx encodes a dict-with-list value as repeated form fields. Passing
+        # a list of tuples here instead makes httpx build a sync stream, which
+        # fails inside the AsyncClient — so always hand it a Mapping.
+        data = {"countries": countries} if countries else {}
+        return await self._request_multipart("/image/inspect", files=files, data=data)
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -197,11 +268,46 @@ def _fmt_json(data: Any) -> str:
     return json.dumps(data, indent=2, ensure_ascii=False, default=str)
 
 
+_IMAGE_CONTENT_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
+
+
+def _read_local_image(image_path: str) -> tuple[bytes, str, str]:
+    """Read a local image file, returning (bytes, filename, content_type)."""
+    expanded = os.path.expanduser(image_path)
+    if not os.path.isfile(expanded):
+        raise RuntimeError(f"Image file not found: {image_path}")
+    ext = os.path.splitext(expanded)[1].lower()
+    content_type = _IMAGE_CONTENT_TYPES.get(ext)
+    if content_type is None:
+        raise RuntimeError(
+            f"Unsupported image type '{ext or 'unknown'}'. Supported: PNG, JPEG, WebP."
+        )
+    with open(expanded, "rb") as f:
+        return f.read(), os.path.basename(expanded), content_type
+
+
+def _save_base64_image(b64: str, out_path: str) -> None:
+    """Decode a base64 image (raw or data URL) and write it to disk."""
+    if b64.strip().startswith("data:") and "," in b64:
+        b64 = b64.split(",", 1)[1]
+    data = base64.b64decode(b64)
+    out_dir = os.path.dirname(out_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+    with open(out_path, "wb") as f:
+        f.write(data)
+
+
 # ---------------------------------------------------------------------------
 # MCP Server
 # ---------------------------------------------------------------------------
 
-mcp = FastMCP(
+mcp = MCPServer(
     "nativ",
     instructions=(
         "Nativ is an AI-powered localization platform. Use the available tools to "
@@ -507,6 +613,150 @@ async def get_brand_voice() -> str:
     if len(prompt) > 2000:
         return f"**Brand Voice Prompt:**\n\n{prompt[:2000]}...\n\n(Truncated — full prompt has {len(prompt)} characters)"
     return f"**Brand Voice Prompt:**\n\n{prompt}"
+
+
+@mcp.tool()
+async def extract_image_text(image_path: str) -> str:
+    """Extract text segments from an image, in reading order (OCR).
+
+    Use this as the first step when localizing an image: pull out the
+    on-image source strings, translate each with `translate` (so TM, style
+    guides, and brand voice apply), then re-render with `localize_image`.
+
+    Args:
+        image_path: Path to a local PNG, JPEG, or WebP image file.
+    """
+    client = _get_client()
+    image_bytes, filename, content_type = _read_local_image(image_path)
+    result = await client.extract_image_segments(image_bytes, filename, content_type)
+
+    segments = [s.get("text", "") for s in result.get("segments", []) if s.get("text")]
+    if not segments:
+        return f"No text found in {os.path.basename(image_path)}."
+
+    lines = [f"**Extracted {len(segments)} text segment(s) from {os.path.basename(image_path)}:**\n"]
+    for i, seg in enumerate(segments, 1):
+        lines.append(f"{i}. {seg}")
+    return "\n".join(lines)
+
+
+@mcp.tool()
+async def localize_image(
+    image_path: str,
+    replacements: str,
+    target_language_code: str,
+    output_path: str = "",
+    num_images: int = 1,
+    output_format: str = "png",
+) -> str:
+    """Localize an image in place by replacing its on-image text with translations.
+
+    Keeps every non-text element (layout, colours, graphics) intact and
+    re-renders the original text with the provided translations. Pair with
+    `extract_image_text` (to get the source strings) and `translate` (to
+    translate them with TM and brand voice) for a full image localization flow.
+
+    The localized image is saved to disk and the file path is returned — the
+    raw image bytes are not sent back to the model.
+
+    Args:
+        image_path: Path to a local PNG, JPEG, or WebP image to localize.
+        replacements: JSON array of {"original": "...", "translated": "..."} pairs,
+            e.g. '[{"original": "Buy now", "translated": "Achetez maintenant"}]'.
+        target_language_code: Target language code (e.g. "fr-FR"), used for labelling output.
+        output_path: Optional path to write the localized image to. Defaults to
+            "<input>.<lang>.<format>" next to the source image.
+        num_images: Number of variants to generate (1-5, default 1).
+        output_format: Output format — png, jpeg, or webp (default png).
+    """
+    client = _get_client()
+
+    try:
+        parsed = json.loads(replacements)
+    except json.JSONDecodeError as e:
+        return (
+            "`replacements` must be a JSON array of "
+            '{"original": "...", "translated": "..."} objects. '
+            f"Parse error: {e}"
+        )
+    if not isinstance(parsed, list) or not parsed:
+        return '`replacements` must be a non-empty JSON array of {"original", "translated"} objects.'
+
+    image_bytes, filename, content_type = _read_local_image(image_path)
+    result = await client.localize_image(
+        image_bytes,
+        filename,
+        content_type,
+        replacements_json=replacements,
+        language_code=target_language_code,
+        num_images=num_images,
+        output_format=output_format,
+    )
+
+    images = result.get("images", [])
+    if not images:
+        return "No localized image was returned by Nativ."
+
+    base, _ = os.path.splitext(os.path.expanduser(image_path))
+    saved: list[str] = []
+    for idx, img in enumerate(images):
+        b64 = img.get("image_base64")
+        if not b64:
+            continue
+        if output_path:
+            if len(images) == 1:
+                out = os.path.expanduser(output_path)
+            else:
+                ob, oe = os.path.splitext(os.path.expanduser(output_path))
+                out = f"{ob}_{idx + 1}{oe or '.' + output_format}"
+        else:
+            suffix = f"_{idx + 1}" if len(images) > 1 else ""
+            out = f"{base}.{target_language_code}{suffix}.{output_format}"
+        _save_base64_image(b64, out)
+        saved.append(out)
+
+    if not saved:
+        return "Nativ returned a response but no image data could be decoded."
+
+    meta = result.get("metadata", {})
+    lines = [f"**Localized image saved ({len(saved)}):**"]
+    lines.extend(f"- {p}" for p in saved)
+    if meta:
+        lines.append(f"\nCost: {meta.get('cost', '?')} credits · images: {meta.get('num_images', len(saved))}")
+    return "\n".join(lines)
+
+
+@mcp.tool()
+async def check_image_cultural_fit(image_path: str, countries: str = "") -> str:
+    """Analyze an image for cultural-sensitivity issues across markets before launch.
+
+    Returns a SAFE / NOT SAFE verdict and, where relevant, the specific
+    countries affected with the issue and a concrete fix.
+
+    Args:
+        image_path: Path to a local PNG, JPEG, or WebP image.
+        countries: Optional comma-separated list of countries to check against
+            (e.g. "Saudi Arabia, Japan, France"). Defaults to the top markets by GDP.
+    """
+    client = _get_client()
+    image_bytes, filename, content_type = _read_local_image(image_path)
+    country_list = [c.strip() for c in countries.split(",") if c.strip()] if countries else []
+    result = await client.inspect_image(
+        image_bytes, filename, content_type, countries=country_list
+    )
+
+    verdict = result.get("verdict", "UNKNOWN")
+    affected = result.get("affected_countries", [])
+
+    lines = [f"**Cultural sensitivity verdict: {verdict}**"]
+    if not affected:
+        lines.append("\nNo issues found across the analyzed markets.")
+    else:
+        for ac in affected:
+            lines.append(f"\n**{ac.get('country', 'Unknown market')}**")
+            lines.append(f"- Issue: {ac.get('issue', '')}")
+            lines.append(f"- Suggestion: {ac.get('suggestion', '')}")
+    return "\n".join(lines)
 
 
 # ===================== RESOURCES =====================
