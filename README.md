@@ -126,6 +126,16 @@ Ask your AI assistant things like:
 | `extract_image_text` | Extract on-image text segments (OCR) in reading order |
 | `localize_image` | Replace on-image text with translations in place, keeping layout and graphics intact |
 | `check_image_cultural_fit` | Flag cultural-sensitivity issues in an image across target markets |
+| `transcribe_audio` | Speech-to-text for a local audio or video file (draft; billed on synthesize) |
+| `parse_audio_script` | Parse a script (.txt/.docx/.pdf/.srt) instead of running STT |
+| `list_voices` | List TTS voices for dubbing |
+| `preview_voice` | Save a short TTS preview WAV to disk |
+| `get_voice_consent_script` | Consent copy required for voice cloning |
+| `synthesize_audio` | Generate billed localized TTS (and optional dubbed MP4) and save to disk |
+| `register_video` | Store a source video for later remux |
+| `remux_video` | Mux a WAV onto a registered video |
+| `parse_subtitle` | Parse a local SRT/ITT into timed cues |
+| `localize_subtitles` | Localize subtitles in-memory from SRT/ITT and/or video STT |
 
 ## Resources
 

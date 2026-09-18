@@ -11,241 +11,14 @@ import sys
 import json
 import base64
 import logging
-from typing import Any, Optional
+from typing import Any
 
-import httpx
 from mcp.server import MCPServer
+
+from nativ_mcp.client import NativClient
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 logger = logging.getLogger("nativ-mcp")
-
-# ---------------------------------------------------------------------------
-# Nativ API client
-# ---------------------------------------------------------------------------
-
-DEFAULT_API_URL = "https://api.usenativ.com"
-
-
-class NativClient:
-    """Thin async wrapper around the Nativ REST API."""
-
-    def __init__(self, api_key: str, base_url: str | None = None):
-        self.base_url = (base_url or DEFAULT_API_URL).rstrip("/")
-        self.headers = {
-            "X-API-Key": api_key,
-            "Content-Type": "application/json",
-            "User-Agent": "nativ-mcp/0.2.1",
-        }
-        # Multipart requests must not set Content-Type; httpx sets the
-        # boundary automatically when files are provided.
-        self.multipart_headers = {
-            "X-API-Key": api_key,
-            "User-Agent": "nativ-mcp/0.2.1",
-        }
-
-    async def _request(
-        self,
-        method: str,
-        path: str,
-        *,
-        json_body: dict | None = None,
-        params: dict | None = None,
-    ) -> dict[str, Any]:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            resp = await client.request(
-                method,
-                f"{self.base_url}{path}",
-                headers=self.headers,
-                json=json_body,
-                params=params,
-            )
-            if resp.status_code == 402:
-                raise RuntimeError("Insufficient Nativ credits. Top up at https://dashboard.usenativ.com")
-            resp.raise_for_status()
-            return resp.json()
-
-    async def _request_multipart(
-        self,
-        path: str,
-        *,
-        files: Any,
-        data: Any | None = None,
-    ) -> dict[str, Any]:
-        # Image generation can take a while, so use a generous timeout.
-        async with httpx.AsyncClient(timeout=300.0) as client:
-            resp = await client.post(
-                f"{self.base_url}{path}",
-                headers=self.multipart_headers,
-                files=files,
-                data=data,
-            )
-            if resp.status_code == 402:
-                raise RuntimeError("Insufficient Nativ credits. Top up at https://dashboard.usenativ.com")
-            resp.raise_for_status()
-            return resp.json()
-
-    # -- Translation --------------------------------------------------------
-
-    async def translate(
-        self,
-        text: str,
-        language: str,
-        *,
-        language_code: str | None = None,
-        source_language: str = "English",
-        source_language_code: str = "en",
-        context: str | None = None,
-        glossary: str | None = None,
-        formality: str | None = None,
-        max_characters: int | None = None,
-        include_tm_info: bool = True,
-        backtranslate: bool = False,
-        include_rationale: bool = True,
-    ) -> dict[str, Any]:
-        body: dict[str, Any] = {
-            "text": text,
-            "language": language,
-            "source_language": source_language,
-            "source_language_code": source_language_code,
-            "tool": "api",
-            "include_tm_info": include_tm_info,
-            "backtranslate": backtranslate,
-            "include_rationale": include_rationale,
-        }
-        if language_code:
-            body["language_code"] = language_code
-        if context:
-            body["context"] = context
-        if glossary:
-            body["glossary"] = glossary
-        if formality:
-            body["formality"] = formality
-        if max_characters is not None:
-            body["max_characters"] = max_characters
-        return await self._request("POST", "/text/culturalize", json_body=body)
-
-    # -- Languages ----------------------------------------------------------
-
-    async def get_languages(self) -> dict[str, Any]:
-        return await self._request("GET", "/user/languages")
-
-    # -- Translation Memory -------------------------------------------------
-
-    async def search_tm(
-        self,
-        query: str,
-        *,
-        source_lang: str = "en",
-        target_lang: str | None = None,
-        score_cutoff: float = 0.0,
-        limit: int = 20,
-    ) -> dict[str, Any]:
-        params: dict[str, Any] = {
-            "query": query,
-            "source_lang": source_lang,
-            "score_cutoff": score_cutoff,
-            "limit": limit,
-        }
-        if target_lang:
-            params["target_lang"] = target_lang
-        return await self._request("GET", "/master-tm/fuzzy-search", params=params)
-
-    async def list_tm_entries(
-        self,
-        *,
-        source_lang: str | None = None,
-        target_lang: str | None = None,
-        search: str | None = None,
-        limit: int = 50,
-        offset: int = 0,
-    ) -> dict[str, Any]:
-        params: dict[str, Any] = {"limit": limit, "offset": offset}
-        if source_lang:
-            params["source_lang"] = source_lang
-        if target_lang:
-            params["target_lang"] = target_lang
-        if search:
-            params["search"] = search
-        return await self._request("GET", "/master-tm/entries", params=params)
-
-    async def add_tm_entry(
-        self,
-        source_text: str,
-        target_text: str,
-        source_language_code: str,
-        target_language_code: str,
-        *,
-        source_name: str | None = None,
-    ) -> dict[str, Any]:
-        body = {
-            "source_text": source_text,
-            "target_text": target_text,
-            "source_language_code": source_language_code,
-            "target_language_code": target_language_code,
-            "information_source": "manual",
-        }
-        if source_name:
-            body["source_name"] = source_name
-        return await self._request("POST", "/master-tm/entries", json_body=body)
-
-    async def get_tm_stats(self) -> dict[str, Any]:
-        return await self._request("GET", "/master-tm/stats")
-
-    # -- Style Guides -------------------------------------------------------
-
-    async def list_style_guides(self) -> dict[str, Any]:
-        return await self._request("GET", "/style-guide")
-
-    async def get_brand_prompt(self) -> dict[str, Any]:
-        return await self._request("GET", "/style-guide/prompt")
-
-    async def get_combined_prompt(self) -> dict[str, Any]:
-        return await self._request("GET", "/style-guide/combined")
-
-    # -- Image --------------------------------------------------------------
-
-    async def extract_image_segments(
-        self, image_bytes: bytes, filename: str, content_type: str
-    ) -> dict[str, Any]:
-        files = {"file": (filename, image_bytes, content_type)}
-        return await self._request_multipart("/text/extract-segments", files=files)
-
-    async def localize_image(
-        self,
-        image_bytes: bytes,
-        filename: str,
-        content_type: str,
-        *,
-        replacements_json: str,
-        language_code: str,
-        num_images: int = 1,
-        output_format: str = "png",
-    ) -> dict[str, Any]:
-        files = {"file": (filename, image_bytes, content_type)}
-        data = {
-            "replacements": replacements_json,
-            "language_code": language_code,
-            "output_format": output_format,
-            "tool": "api",
-            "num_images": str(num_images),
-        }
-        return await self._request_multipart("/image/localize", files=files, data=data)
-
-    async def inspect_image(
-        self,
-        image_bytes: bytes,
-        filename: str,
-        content_type: str,
-        *,
-        countries: list[str] | None = None,
-    ) -> dict[str, Any]:
-        files = {"file": (filename, image_bytes, content_type)}
-        # httpx encodes a dict-with-list value as repeated form fields. Passing
-        # a list of tuples here instead makes httpx build a sync stream, which
-        # fails inside the AsyncClient — so always hand it a Mapping.
-        data = {"countries": countries} if countries else {}
-        return await self._request_multipart("/image/inspect", files=files, data=data)
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -291,6 +64,35 @@ def _read_local_image(image_path: str) -> tuple[bytes, str, str]:
         return f.read(), os.path.basename(expanded), content_type
 
 
+def _read_local_file(path: str) -> tuple[bytes, str, str]:
+    expanded = os.path.expanduser(path)
+    if not os.path.isfile(expanded):
+        raise RuntimeError(f"File not found: {path}")
+    with open(expanded, "rb") as f:
+        data = f.read()
+    filename = os.path.basename(expanded)
+    ext = os.path.splitext(expanded)[1].lower()
+    types = {
+        **_IMAGE_CONTENT_TYPES,
+        ".wav": "audio/wav",
+        ".mp3": "audio/mpeg",
+        ".m4a": "audio/mp4",
+        ".aac": "audio/aac",
+        ".ogg": "audio/ogg",
+        ".flac": "audio/flac",
+        ".mp4": "video/mp4",
+        ".mov": "video/quicktime",
+        ".mkv": "video/x-matroska",
+        ".webm": "video/webm",
+        ".srt": "application/x-subrip",
+        ".itt": "application/xml",
+        ".txt": "text/plain",
+        ".pdf": "application/pdf",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }
+    return data, filename, types.get(ext, "application/octet-stream")
+
+
 def _save_base64_image(b64: str, out_path: str) -> None:
     """Decode a base64 image (raw or data URL) and write it to disk."""
     if b64.strip().startswith("data:") and "," in b64:
@@ -311,9 +113,10 @@ mcp = MCPServer(
     "nativ",
     instructions=(
         "Nativ is an AI-powered localization platform. Use the available tools to "
-        "translate text, search translation memory, manage TM entries, and access "
-        "style guides. Always use the user's configured languages and respect their "
-        "brand voice and style settings."
+        "translate text, search translation memory, manage TM entries, access "
+        "style guides, localize images, transcribe and dub audio/video, and "
+        "localize subtitles. Always use the user's configured languages and "
+        "respect their brand voice and style settings."
     ),
 )
 
@@ -757,6 +560,11 @@ async def check_image_cultural_fit(image_path: str, countries: str = "") -> str:
             lines.append(f"- Issue: {ac.get('issue', '')}")
             lines.append(f"- Suggestion: {ac.get('suggestion', '')}")
     return "\n".join(lines)
+
+
+from nativ_mcp.media_tools import register_media_tools
+
+register_media_tools(mcp, _get_client, _read_local_file, _save_base64_image)
 
 
 # ===================== RESOURCES =====================
