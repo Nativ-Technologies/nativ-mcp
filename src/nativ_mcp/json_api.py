@@ -13,6 +13,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
+from nativ_mcp import __version__
 from nativ_mcp.runtime import hosted_request
 
 
@@ -69,7 +70,7 @@ def openapi_schema(tools: list[Any], server_url: str) -> dict:
         }}
     return {
         "openapi": "3.1.0", "info": {
-            "title": "Nativ JSON Tools API", "version": "0.3.0",
+            "title": "Nativ JSON Tools API", "version": __version__,
             "description": "JSON-only access to Nativ localization tools. Send public HTTPS media URLs and receive expiring download URLs. No multipart uploads or binary response bodies are required.",
         }, "servers": [{"url": server_url}], "paths": paths,
         "components": {

@@ -6,12 +6,12 @@
     "url": "https://github.com/Nativ-Technologies/nativ-mcp",
     "source": "github"
   },
-  "version": "0.3.0",
+  "version": "0.4.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "nativ-mcp",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "transport": {
         "type": "stdio"
       },
@@ -35,7 +35,7 @@
     {
       "registryType": "pypi",
       "identifier": "nativ-mcp",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "transport": {
         "type": "stdio"
       },
@@ -53,6 +53,20 @@
           "isRequired": false,
           "format": "string",
           "isSecret": false
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.usenativ.com/mcp",
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "description": "Your Nativ API key from dashboard.usenativ.com → Settings → API Keys",
+          "isRequired": true,
+          "isSecret": true
         }
       ]
     }

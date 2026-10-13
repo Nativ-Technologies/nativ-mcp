@@ -7,6 +7,8 @@ from typing import Any
 
 import httpx
 
+from nativ_mcp import __version__
+
 DEFAULT_API_URL = "https://api.usenativ.com"
 
 
@@ -18,13 +20,13 @@ class NativClient:
         self.headers = {
             "X-API-Key": api_key,
             "Content-Type": "application/json",
-            "User-Agent": "nativ-mcp/0.3.0",
+            "User-Agent": f"nativ-mcp/{__version__}",
         }
         # Multipart requests must not set Content-Type; httpx sets the
         # boundary automatically when files are provided.
         self.multipart_headers = {
             "X-API-Key": api_key,
-            "User-Agent": "nativ-mcp/0.3.0",
+            "User-Agent": f"nativ-mcp/{__version__}",
         }
 
     async def _request(

@@ -1,7 +1,7 @@
 {
   "name": "nativ-mcp",
-  "version": "0.3.0",
-  "description": "MCP server for Nativ — AI-powered localization platform. Translate text, manage translation memory, and access style guides from any MCP-compatible AI tool.",
+  "version": "0.4.0",
+  "description": "MCP server for Nativ \u2014 AI-powered localization platform. Translate text, manage translation memory, and access style guides from any MCP-compatible AI tool.",
   "keywords": [
     "mcp",
     "localization",
@@ -16,7 +16,7 @@
   "homepage": "https://usenativ.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nativ-ai/nativ-mcp"
+    "url": "https://github.com/Nativ-Technologies/nativ-mcp"
   },
   "license": "MIT",
   "author": "Nativ <hello@usenativ.com>",

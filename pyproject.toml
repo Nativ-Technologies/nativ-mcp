@@ -1,6 +1,6 @@
 [project]
 name = "nativ-mcp"
-version = "0.3.0"
+version = "0.4.0"
 description = "MCP server for Nativ — AI-powered localization platform. Translate text, manage translation memory, and access style guides from any MCP-compatible AI tool."
 readme = "README.md"
 license = { text = "MIT" }
@@ -48,9 +48,9 @@ nativ-mcp-http = "nativ_mcp.hosted:main"
 
 [project.urls]
 Homepage = "https://usenativ.com"
-Repository = "https://github.com/nativ-ai/nativ-mcp"
-Documentation = "https://github.com/nativ-ai/nativ-mcp#readme"
-Issues = "https://github.com/nativ-ai/nativ-mcp/issues"
+Repository = "https://github.com/Nativ-Technologies/nativ-mcp"
+Documentation = "https://github.com/Nativ-Technologies/nativ-mcp#readme"
+Issues = "https://github.com/Nativ-Technologies/nativ-mcp/issues"
 
 [build-system]
 requires = ["hatchling"]
@@ -61,3 +61,15 @@ packages = ["src/nativ_mcp"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "src/nativ_mcp/rest-openapi.json" = "nativ_mcp/rest-openapi.json"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src/nativ_mcp",
+    "/tests",
+    "/docs/hosting.md",
+    "/pyproject.toml",
+    "/README.md",
+    "/README.fr.md",
+    "/LICENSE",
+    "/server.json",
+]

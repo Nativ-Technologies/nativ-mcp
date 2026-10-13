@@ -4,7 +4,7 @@ const { spawn, execSync, execFileSync } = require("child_process");
 const { existsSync } = require("fs");
 const { join } = require("path");
 
-const PYPI_PACKAGE = "nativ-mcp";
+const PYPI_PACKAGE = "nativ-mcp==" + require("../package.json").version;
 const UV_INSTALL_URL = "https://astral.sh/uv/install.sh";
 
 function findInPath(cmd) {
