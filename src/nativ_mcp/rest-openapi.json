@@ -1,0 +1,4080 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Nativ Localization API",
+    "version": "0.3.0",
+    "description": "REST operations used by Nativ MCP. Media requests use multipart file uploads; responses may include base64 media."
+  },
+  "servers": [
+    {
+      "url": "https://api.usenativ.com"
+    }
+  ],
+  "security": [
+    {
+      "NativAPIKey": []
+    }
+  ],
+  "paths": {
+    "/audio/remux-video": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Remux Video",
+        "operationId": "remux_video_audio_remux_video_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioRemuxRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioRemuxResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/audio/script": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Extract Script Upload",
+        "description": "Parse a txt/docx/pdf/srt script so TTS can skip speech-to-text.",
+        "operationId": "extract_script_upload_audio_script_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_extract_script_upload_audio_script_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioTranscribeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/audio/synthesize": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Synthesize",
+        "operationId": "synthesize_audio_synthesize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioSynthesizeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioSynthesizeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/audio/transcribe": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Transcribe",
+        "description": "Speech-to-text for playground audio localization. Unbilled draft step.",
+        "operationId": "transcribe_audio_transcribe_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_transcribe_audio_transcribe_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioTranscribeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/audio/video/register": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Register Source Video",
+        "operationId": "register_source_video_audio_video_register_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_register_source_video_audio_video_register_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioVideoRegisterResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/audio/voices": {
+      "get": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Voices",
+        "operationId": "voices_audio_voices_get",
+        "parameters": [
+          {
+            "name": "language_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Language Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioVoicesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/audio/voices/consent-script": {
+      "get": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Voice Consent Script",
+        "operationId": "voice_consent_script_audio_voices_consent_script_get",
+        "parameters": [
+          {
+            "name": "language_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Language Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioConsentScriptResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/audio/voices/preview": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Voice Preview",
+        "operationId": "voice_preview_audio_voices_preview_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioPreviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/image/inspect": {
+      "post": {
+        "tags": [
+          "image"
+        ],
+        "summary": "Inspect Image Cultural Sensitivity",
+        "description": "Analyze an image or document for cultural sensitivity issues across specified countries.\n\nAccepts:\n  - file: Image (PNG, JPEG, WebP, GIF) or document (TXT, MD, CSV, JSON, HTML,\n          SRT, DOCX, XLSX, PPTX, PDF). Audio and video are not supported yet.\n  - countries: Optional country names (repeated form fields and/or comma-separated).\n               Any world country name is accepted. Defaults to top 30 by GDP.\nReturns:\n  - {\n      \"verdict\": \"SAFE\" | \"NOT SAFE\",\n      \"affected_countries\": [\n        {\n          \"country\": \"Specific Country Name\",\n          \"issue\": \"Precise description of the problematic element and why it's inappropriate in this cultural context.\",\n          \"suggestion\": \"Concrete, actionable recommendation to fix the issue while maintaining creative intent.\"\n        }\n      ]\n    }",
+        "operationId": "inspect_image_cultural_sensitivity_image_inspect_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_inspect_image_cultural_sensitivity_image_inspect_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageInspectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/image/localize": {
+      "post": {
+        "tags": [
+          "image"
+        ],
+        "summary": "Localize Image",
+        "description": "Localize an arbitrary image by replacing its in-image text with approved\ntranslations (powered by gpt-image-2), keeping every non-text element intact.\n\nThis is distinct from /image/culturalize (logo localization, gpt-image-1):\nthat endpoint reproduces a single stylized text, while this one edits a busy\nimage in place using one or more original->localized text replacements.\n\nAccepts:\n  - file: PNG, JPEG, or WebP image file\n  - mask: Optional legacy union PNG mask (transparent area = editable)\n  - region_masks: Optional repeated PNG masks, one per disconnected region\n  - region_replacements: Replacement arrays paired with region_masks\n  - mask_required: Fail closed if a caller intended masking but sent none\n  - replacements: JSON array of {\"original\": \"...\", \"translated\": \"...\"} pairs\n  - language_code: Target language code\n  - context: Optional user instructions / guidance for this localization run\n  - rtl: Optional RTL override; omitted auto-enables it for RTL languages\n  - output_format: Output format (png, jpeg, webp)\n  - tool: Source tool making the request\n  - num_images: Number of images to generate (1-5, defaults to 1)\nReturns:\n  - {\n      \"images\": [{\"image_base64\": \"<generated_image_base64>\"}, ...],\n      \"metadata\": {\"cost\": <total_credits>, \"num_images\": <number_generated>}\n    }",
+        "operationId": "localize_image_image_localize_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_localize_image_image_localize_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageLocalizeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/master-tm/entries": {
+      "get": {
+        "tags": [
+          "master-tm"
+        ],
+        "summary": "List Entries",
+        "description": "List TM entries for the authenticated user with optional filters.\nUses a single query to fetch both entries and count for better performance.",
+        "operationId": "list_entries_master_tm_entries_get",
+        "parameters": [
+          {
+            "name": "source_lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by source language",
+              "title": "Source Lang"
+            },
+            "description": "Filter by source language"
+          },
+          {
+            "name": "target_lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by target language",
+              "title": "Target Lang"
+            },
+            "description": "Filter by target language"
+          },
+          {
+            "name": "information_source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by information source",
+              "title": "Information Source"
+            },
+            "description": "Filter by information source"
+          },
+          {
+            "name": "source_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by source name (e.g., filename or glossary name)",
+              "title": "Source Name"
+            },
+            "description": "Filter by source name (e.g., filename or glossary name)"
+          },
+          {
+            "name": "campaign_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated campaign IDs to filter by",
+              "title": "Campaign Ids"
+            },
+            "description": "Comma-separated campaign IDs to filter by"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search in source_text and target_text",
+              "title": "Search"
+            },
+            "description": "Search in source_text and target_text"
+          },
+          {
+            "name": "enabled_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Only return enabled entries",
+              "default": false,
+              "title": "Enabled Only"
+            },
+            "description": "Only return enabled entries"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Sort by column: updated_at, source_text, target_text",
+              "default": "updated_at",
+              "title": "Sort By"
+            },
+            "description": "Sort by column: updated_at, source_text, target_text"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Sort order: asc or desc",
+              "default": "desc",
+              "title": "Sort Order"
+            },
+            "description": "Sort order: asc or desc"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TMEntriesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "master-tm"
+        ],
+        "summary": "Create Entry",
+        "description": "Create a new TM entry (manual addition).",
+        "operationId": "create_entry_master_tm_entries_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TMEntryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TMEntryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/master-tm/fuzzy-search": {
+      "get": {
+        "tags": [
+          "master-tm"
+        ],
+        "summary": "Fuzzy Search",
+        "description": "Fuzzy search TM entries using the same algorithm as translation matching.\nReturns results sorted by match score with % displayed.\n\nUse this for the Settings > TM table search functionality.",
+        "operationId": "fuzzy_search_master_tm_fuzzy_search_get",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Text to fuzzy search",
+              "title": "Query"
+            },
+            "description": "Text to fuzzy search"
+          },
+          {
+            "name": "source_lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Source language code",
+              "default": "en",
+              "title": "Source Lang"
+            },
+            "description": "Source language code"
+          },
+          {
+            "name": "target_lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target language code (optional)",
+              "title": "Target Lang"
+            },
+            "description": "Target language code (optional)"
+          },
+          {
+            "name": "score_cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 100,
+              "minimum": 0,
+              "description": "Minimum match score",
+              "default": 0.0,
+              "title": "Score Cutoff"
+            },
+            "description": "Minimum match score"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Maximum results",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum results"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/master-tm/stats": {
+      "get": {
+        "tags": [
+          "master-tm"
+        ],
+        "summary": "Get Stats",
+        "description": "Get TM statistics for the authenticated user.",
+        "operationId": "get_stats_master_tm_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TMStatsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/style-guide": {
+      "get": {
+        "tags": [
+          "style-guide"
+        ],
+        "summary": "List Style Guides",
+        "description": "List all user style guides (excluding master prompt).\nReturns guides ordered by display_order.",
+        "operationId": "list_style_guides_style_guide_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StyleGuideListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "style-guide"
+        ],
+        "summary": "Create Style Guide",
+        "description": "Create a new style guide entry.",
+        "operationId": "create_style_guide_style_guide_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StyleGuideCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StyleGuide"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/style-guide/combined": {
+      "get": {
+        "tags": [
+          "style-guide"
+        ],
+        "summary": "Get Combined Prompt",
+        "description": "Get the combined prompt: base prompt.txt + all enabled style guides.\nThis is what gets used for translations.",
+        "operationId": "get_combined_prompt_style_guide_combined_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Combined Prompt Style Guide Combined Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/style-guide/prompt": {
+      "get": {
+        "tags": [
+          "style-guide"
+        ],
+        "summary": "Get Brand Prompt",
+        "description": "Get the user's cached master prompt from DB.\nIf not cached yet, returns exists=False.\nUse POST /style-guide/prompt/sync to sync from GCS.",
+        "operationId": "get_brand_prompt_style_guide_prompt_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandPromptResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/subtitle/parse": {
+      "post": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "Parse Subtitle Cues",
+        "operationId": "parse_subtitle_cues_subtitle_parse_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_parse_subtitle_cues_subtitle_parse_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubtitleParseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/subtitle/playground": {
+      "post": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "Playground Localize Subtitles",
+        "description": "Localize SRT/ITT in-memory for playground. Optional video is transcribed when no subtitle file is sent.",
+        "operationId": "playground_localize_subtitles_subtitle_playground_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_playground_localize_subtitles_subtitle_playground_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubtitlePlaygroundResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/text/culturalize": {
+      "post": {
+        "tags": [
+          "text"
+        ],
+        "summary": "Culturalize Text",
+        "description": "Intelligent translation with glossary priority and fixed cost of 100 credits.\n\nAccepts:\n  - text: the source text to translate\n  - language: target language full name (e.g. \"French\")\n  - language_code: optional target language code (e.g. \"FR\") - if not provided, will be empty\n  - source_language: source language name (default: \"English\")\n  - source_language_code: source language code (default: \"en\")\n  - glossary: optional glossary content for priority matching\n  - context: optional context to use for the translation\n  - image_base64: optional base64-encoded image (raw base64 or data URL) to provide visual context\n  - tool: the tool to use for the translation (e.g. \"psd-api\")\n  - formality: optional formality level (very_informal, informal, neutral, formal, very_formal) - if not provided, uses user's default settings\n  - include_tm_info: when true, returns TM match score, reference, and rationale\n  - backtranslate: when true (and include_tm_info=true), generates backtranslation and AI-powered rationale\n  \nReturns:\n  - { \n      \"translated_text\": \"<intelligent translation>\", \n      \"metadata\": {\n        \"word_count\": <number>,\n        \"cost\": 100\n      },\n      \"tm_match\": { ... } // only when include_tm_info=true\n      \"rationale\": \"...\" // only when include_tm_info=true (AI-powered when backtranslate=true)\n      \"backtranslation\": \"...\" // only when backtranslate=true\n    }",
+        "operationId": "culturalize_text_text_culturalize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranslationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/TranslationWithTMResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TranslationResponse"
+                    }
+                  ],
+                  "title": "Response Culturalize Text Text Culturalize Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/text/extract-segments": {
+      "post": {
+        "tags": [
+          "text"
+        ],
+        "summary": "Extract Text Segments Endpoint",
+        "description": "Extract distinct text segments from an image, in reading order.\n\nUsed by image localization to translate each segment independently with\nfull TM + style-guide context before the image is regenerated.\n\nAccepts:\n  - file: PNG, JPEG, or WebP image file\nReturns:\n  - {\n      \"segments\": [{\"text\": \"...\"}, ...]\n    }",
+        "operationId": "extract_text_segments_endpoint_text_extract_segments_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_extract_text_segments_endpoint_text_extract_segments_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OCRSegmentsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/user/languages": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get User Languages",
+        "description": "Get all languages available for the authenticated user.\n\nReturns:\n  - {\n      \"languages\": [\n        {\n          \"id\": 1,\n          \"language\": \"English\",\n          \"language_code\": \"en\"\n        },\n        {\n          \"id\": 2,\n          \"language\": \"Spanish\", \n          \"language_code\": \"es\"\n        }\n      ]\n    }",
+        "operationId": "get_user_languages_user_languages_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLanguagesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "NativAPIKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "UserLanguagesResponse": {
+        "properties": {
+          "languages": {
+            "items": {
+              "$ref": "#/components/schemas/UserLanguage"
+            },
+            "type": "array",
+            "title": "Languages",
+            "description": "List of languages available for the user"
+          }
+        },
+        "type": "object",
+        "required": [
+          "languages"
+        ],
+        "title": "UserLanguagesResponse",
+        "description": "Response model for user languages list."
+      },
+      "UserLanguage": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Language mapping ID"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "description": "Full language name (e.g., 'English', 'Spanish')"
+          },
+          "language_code": {
+            "type": "string",
+            "title": "Language Code",
+            "description": "Language code (e.g., 'en', 'es')"
+          },
+          "formality": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "very_informal",
+                  "informal",
+                  "neutral",
+                  "formal",
+                  "very_formal"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formality",
+            "description": "Formality preference for this language"
+          },
+          "custom_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Style",
+            "description": "Custom style directives text for this language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "language",
+          "language_code"
+        ],
+        "title": "UserLanguage",
+        "description": "Individual user language mapping."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "OCRSegmentsResponse": {
+        "properties": {
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/OCRSegment"
+            },
+            "type": "array",
+            "title": "Segments",
+            "description": "Distinct text segments found in the image, in reading order"
+          }
+        },
+        "type": "object",
+        "title": "OCRSegmentsResponse",
+        "description": "Response model for segmented OCR text extraction."
+      },
+      "OCRSegment": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Exact text of the segment, with line breaks preserved as \\n"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "OCRSegment",
+        "description": "A single distinct text segment extracted from an image."
+      },
+      "Body_extract_text_segments_endpoint_text_extract_segments_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_extract_text_segments_endpoint_text_extract_segments_post"
+      },
+      "TranslationResponse": {
+        "properties": {
+          "translated_text": {
+            "type": "string",
+            "title": "Translated Text",
+            "description": "The translated text result"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/TranslationMetadata",
+            "description": "Translation metadata including word count and fixed cost"
+          },
+          "segment_details": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/LocalizationSegmentDetail"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segment Details",
+            "description": "Optional per-segment TM and review metadata for JSON-array localization batches."
+          }
+        },
+        "type": "object",
+        "required": [
+          "translated_text",
+          "metadata"
+        ],
+        "title": "TranslationResponse",
+        "description": "Response model for translation results."
+      },
+      "LocalizationSegmentDetail": {
+        "properties": {
+          "translated_text": {
+            "type": "string",
+            "title": "Translated Text"
+          },
+          "tm_match": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TMMatchInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale"
+          },
+          "backtranslation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backtranslation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "translated_text"
+        ],
+        "title": "LocalizationSegmentDetail",
+        "description": "Per-segment TM / backtranslation / rationale for batched localization review."
+      },
+      "TMMatchInfo": {
+        "properties": {
+          "score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "description": "Fuzzy match score (0-100%)"
+          },
+          "match_type": {
+            "type": "string",
+            "title": "Match Type",
+            "description": "Type of match: exact, fuzzy, or partial"
+          },
+          "source_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Text",
+            "description": "The source text from the TM entry that matched"
+          },
+          "target_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Text",
+            "description": "The target text from the TM entry"
+          },
+          "tm_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tm Source",
+            "description": "Source of the TM entry (phrase_tm, phrase_tb, user_glossary, etc.)"
+          },
+          "tm_source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tm Source Name",
+            "description": "Name of the specific TM/TB/glossary"
+          },
+          "tm_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tm Id",
+            "description": "UUID of the best match row in master_tm table"
+          },
+          "top_matches": {
+            "items": {
+              "$ref": "#/components/schemas/TMMatchDetailResponse"
+            },
+            "type": "array",
+            "title": "Top Matches",
+            "description": "Top 5 matches for tooltip display with scores"
+          }
+        },
+        "type": "object",
+        "required": [
+          "score",
+          "match_type"
+        ],
+        "title": "TMMatchInfo",
+        "description": "Information about the best TM match for a translation."
+      },
+      "TMMatchDetailResponse": {
+        "properties": {
+          "tm_id": {
+            "type": "string",
+            "title": "Tm Id",
+            "description": "UUID of the TM entry in master_tm table"
+          },
+          "score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "description": "Fuzzy match score (0-100%)"
+          },
+          "match_type": {
+            "type": "string",
+            "title": "Match Type",
+            "description": "Type of match: exact, strong, or partial"
+          },
+          "source_text": {
+            "type": "string",
+            "title": "Source Text",
+            "description": "The source text from the TM entry"
+          },
+          "target_text": {
+            "type": "string",
+            "title": "Target Text",
+            "description": "The target text from the TM entry"
+          },
+          "information_source": {
+            "type": "string",
+            "title": "Information Source",
+            "description": "Source type: brand_voice, phrase_tm, phrase_tb, etc."
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name",
+            "description": "Name of the specific TM/TB/glossary",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "tm_id",
+          "score",
+          "match_type",
+          "source_text",
+          "target_text",
+          "information_source"
+        ],
+        "title": "TMMatchDetailResponse",
+        "description": "Detail of a single TM match for tooltip display."
+      },
+      "TranslationMetadata": {
+        "properties": {
+          "word_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Word Count",
+            "description": "Number of words in the translated text"
+          },
+          "cost": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cost",
+            "description": "Total cost in credits (fixed at 100 credits)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "word_count",
+          "cost"
+        ],
+        "title": "TranslationMetadata",
+        "description": "Metadata for translation results with fixed cost."
+      },
+      "TranslationWithTMResponse": {
+        "properties": {
+          "translated_text": {
+            "type": "string",
+            "title": "Translated Text",
+            "description": "The translated text result"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/TranslationMetadata",
+            "description": "Translation metadata including word count and fixed cost"
+          },
+          "tm_match": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TMMatchInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Best TM match information for this translation"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale",
+            "description": "Brief explanation of the translation rationale (for low TM matches)"
+          },
+          "backtranslation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backtranslation",
+            "description": "Backtranslation to source language (only when backtranslate=true)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "translated_text",
+          "metadata"
+        ],
+        "title": "TranslationWithTMResponse",
+        "description": "Response model for translation results with TM metadata."
+      },
+      "TranslationRequest": {
+        "properties": {
+          "glossary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Glossary",
+            "description": "Optional glossary content for priority matching"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Text",
+            "description": "Text to be translated",
+            "example": "Hello"
+          },
+          "language": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Language",
+            "description": "Target language name",
+            "example": "French"
+          },
+          "language_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language Code",
+            "description": "Optional target language code (auto-detected from language if not provided)",
+            "example": "FR"
+          },
+          "tool": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool",
+            "description": "Source tool making the request (api, premierepro, indesign, photoshop, figma, dashboard)",
+            "default": "api"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin",
+            "description": "Workflow that produced this call, e.g. 'image_localization' or 'logo_localization'. Used to attribute Operations beyond the tool/channel."
+          },
+          "defer_operation_log": {
+            "type": "boolean",
+            "title": "Defer Operation Log",
+            "description": "For dashboard image-localization review drafts only. The final audited image operation is logged after rendering.",
+            "default": false
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "Context to use for the translation"
+          },
+          "image_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Base64",
+            "description": "Optional base64-encoded image (raw base64 or data URL) to provide visual context to GPT-4o"
+          },
+          "formality": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formality",
+            "description": "Optional formality level for style directives (very_informal, informal, neutral, formal, very_formal). If not provided, uses default from user's language settings."
+          },
+          "source_language": {
+            "type": "string",
+            "title": "Source Language",
+            "description": "Source language name (default: English for backwards compatibility)",
+            "default": "English",
+            "example": "English"
+          },
+          "source_language_code": {
+            "type": "string",
+            "maxLength": 10,
+            "minLength": 2,
+            "title": "Source Language Code",
+            "description": "Source language code (default: en for backwards compatibility)",
+            "default": "en",
+            "example": "en"
+          },
+          "include_tm_info": {
+            "type": "boolean",
+            "title": "Include Tm Info",
+            "description": "When true, returns TM match score, reference, and rationale along with the translation",
+            "default": false
+          },
+          "backtranslate": {
+            "type": "boolean",
+            "title": "Backtranslate",
+            "description": "When true (and include_tm_info=true), generates backtranslation to source language",
+            "default": false
+          },
+          "include_rationale": {
+            "type": "boolean",
+            "title": "Include Rationale",
+            "description": "When true (and backtranslate=true), generates AI-powered rationale explaining translation decisions and attributing sources",
+            "default": true
+          },
+          "max_characters": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Characters",
+            "description": "Optional strict character count limit for the translation output. When provided, the AI will be instructed to keep the translation within this many characters."
+          },
+          "max_characters_list": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Characters List",
+            "description": "Optional per-segment character limits when `text` is a JSON array of strings."
+          },
+          "campaign_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign Ids",
+            "description": "Campaign IDs to filter TM entries by during translation. Approved translations will be tagged with these campaigns."
+          },
+          "figma_file_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma File Key",
+            "description": "Figma file key (figma.fileKey) for the file the request originated from."
+          },
+          "figma_file_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma File Name",
+            "description": "Figma file name at time of localization."
+          },
+          "figma_frame_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma Frame Id",
+            "description": "Top-level FRAME node id containing the localized text. Billing unit."
+          },
+          "figma_frame_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma Frame Name",
+            "description": "Top-level FRAME name (for display)."
+          },
+          "figma_text_node_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma Text Node Id",
+            "description": "Figma TEXT node id of the source string."
+          },
+          "figma_batch_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma Batch Id",
+            "description": "UUID grouping all culturalize calls from a single Localize click."
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "language"
+        ],
+        "title": "TranslationRequest",
+        "description": "Request model for intelligent translation with glossary priority."
+      },
+      "SubtitlePlaygroundResponse": {
+        "properties": {
+          "video_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Id"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms",
+            "default": 0
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "source_cues": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Source Cues"
+          },
+          "languages": {
+            "items": {
+              "$ref": "#/components/schemas/SubtitlePlaygroundLanguage"
+            },
+            "type": "array",
+            "title": "Languages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "source_cues",
+          "languages"
+        ],
+        "title": "SubtitlePlaygroundResponse"
+      },
+      "SubtitlePlaygroundLanguage": {
+        "properties": {
+          "language_code": {
+            "type": "string",
+            "title": "Language Code"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "srt_utf8": {
+            "type": "string",
+            "title": "Srt Utf8"
+          },
+          "cues": {
+            "items": {
+              "$ref": "#/components/schemas/SubtitlePlaygroundCue"
+            },
+            "type": "array",
+            "title": "Cues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "language_code",
+          "language",
+          "srt_utf8",
+          "cues"
+        ],
+        "title": "SubtitlePlaygroundLanguage"
+      },
+      "SubtitlePlaygroundCue": {
+        "properties": {
+          "original": {
+            "type": "string",
+            "title": "Original"
+          },
+          "translated": {
+            "type": "string",
+            "title": "Translated"
+          },
+          "start_ms": {
+            "type": "integer",
+            "title": "Start Ms"
+          },
+          "end_ms": {
+            "type": "integer",
+            "title": "End Ms"
+          },
+          "begin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Begin"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "original",
+          "translated",
+          "start_ms",
+          "end_ms"
+        ],
+        "title": "SubtitlePlaygroundCue"
+      },
+      "Body_playground_localize_subtitles_subtitle_playground_post": {
+        "properties": {
+          "target_language_codes": {
+            "type": "string",
+            "title": "Target Language Codes"
+          },
+          "source_language_code": {
+            "type": "string",
+            "title": "Source Language Code",
+            "default": "en"
+          },
+          "context": {
+            "type": "string",
+            "title": "Context",
+            "default": ""
+          },
+          "formality": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formality"
+          },
+          "campaign_ids": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign Ids"
+          },
+          "video": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtitle"
+          },
+          "glossary": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Glossary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_language_codes"
+        ],
+        "title": "Body_playground_localize_subtitles_subtitle_playground_post"
+      },
+      "SubtitleParseResponse": {
+        "properties": {
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "cues": {
+            "items": {
+              "$ref": "#/components/schemas/SubtitleParseCue"
+            },
+            "type": "array",
+            "title": "Cues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "duration_ms",
+          "cues"
+        ],
+        "title": "SubtitleParseResponse"
+      },
+      "SubtitleParseCue": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "start_ms": {
+            "type": "integer",
+            "title": "Start Ms"
+          },
+          "end_ms": {
+            "type": "integer",
+            "title": "End Ms"
+          },
+          "begin": {
+            "type": "string",
+            "title": "Begin"
+          },
+          "end": {
+            "type": "string",
+            "title": "End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "start_ms",
+          "end_ms",
+          "begin",
+          "end"
+        ],
+        "title": "SubtitleParseCue"
+      },
+      "Body_parse_subtitle_cues_subtitle_parse_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_parse_subtitle_cues_subtitle_parse_post"
+      },
+      "BrandPromptResponse": {
+        "properties": {
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists",
+            "default": false
+          },
+          "cached": {
+            "type": "boolean",
+            "title": "Cached",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "BrandPromptResponse",
+        "description": "Response model for fetching brand prompt from GCS."
+      },
+      "StyleGuide": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "default": "Untitled"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "display_order": {
+            "type": "integer",
+            "title": "Display Order",
+            "default": 0
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "title": "Is Enabled",
+            "default": true
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "id",
+          "user_id"
+        ],
+        "title": "StyleGuide",
+        "description": "Full style guide model with all fields."
+      },
+      "StyleGuideCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "default": "Untitled"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "display_order": {
+            "type": "integer",
+            "title": "Display Order",
+            "default": 0
+          },
+          "is_enabled": {
+            "type": "boolean",
+            "title": "Is Enabled",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "StyleGuideCreate",
+        "description": "Model for creating a new style guide entry."
+      },
+      "StyleGuideListResponse": {
+        "properties": {
+          "guides": {
+            "items": {
+              "$ref": "#/components/schemas/StyleGuide"
+            },
+            "type": "array",
+            "title": "Guides"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "guides",
+          "total"
+        ],
+        "title": "StyleGuideListResponse",
+        "description": "Response model for listing style guides."
+      },
+      "TMStatsResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "enabled": {
+            "type": "integer",
+            "title": "Enabled"
+          },
+          "disabled": {
+            "type": "integer",
+            "title": "Disabled"
+          },
+          "by_source": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "type": "object"
+            },
+            "type": "object",
+            "title": "By Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "enabled",
+          "disabled",
+          "by_source"
+        ],
+        "title": "TMStatsResponse",
+        "description": "Response model for TM statistics"
+      },
+      "TMEntryResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "end_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End User Id"
+          },
+          "source_language_code": {
+            "type": "string",
+            "title": "Source Language Code"
+          },
+          "source_text": {
+            "type": "string",
+            "title": "Source Text"
+          },
+          "target_language_code": {
+            "type": "string",
+            "title": "Target Language Code"
+          },
+          "target_text": {
+            "type": "string",
+            "title": "Target Text"
+          },
+          "information_source": {
+            "type": "string",
+            "title": "Information Source"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Name"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "priority": {
+            "type": "integer",
+            "title": "Priority"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "match_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match Score"
+          },
+          "campaigns": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/CampaignTagResponse"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaigns"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "user_id",
+          "end_user_id",
+          "source_language_code",
+          "source_text",
+          "target_language_code",
+          "target_text",
+          "information_source",
+          "source_name",
+          "enabled",
+          "priority",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TMEntryResponse",
+        "description": "Response model for a TM entry"
+      },
+      "CampaignTagResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "color": {
+            "type": "string",
+            "title": "Color"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "color"
+        ],
+        "title": "CampaignTagResponse",
+        "description": "Minimal campaign info for TM entry responses"
+      },
+      "TMEntryCreate": {
+        "properties": {
+          "source_language_code": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Source Language Code",
+            "example": "en-GB"
+          },
+          "source_text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Source Text"
+          },
+          "target_language_code": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Target Language Code",
+            "example": "fr-FR"
+          },
+          "target_text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Target Text"
+          },
+          "information_source": {
+            "type": "string",
+            "title": "Information Source",
+            "default": "manual",
+            "example": "manual"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Name",
+            "example": "My Custom TM"
+          },
+          "priority": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Priority",
+            "default": 50
+          },
+          "campaign_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign Ids",
+            "description": "Campaign IDs to tag this entry with"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_language_code",
+          "source_text",
+          "target_language_code",
+          "target_text"
+        ],
+        "title": "TMEntryCreate",
+        "description": "Request model for creating a TM entry"
+      },
+      "TMEntriesResponse": {
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/TMEntryResponse"
+            },
+            "type": "array",
+            "title": "Entries"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entries",
+          "total",
+          "offset",
+          "limit"
+        ],
+        "title": "TMEntriesResponse",
+        "description": "Response model for listing TM entries"
+      },
+      "ImageLocalizeResponse": {
+        "properties": {
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/ImageData"
+            },
+            "type": "array",
+            "title": "Images",
+            "description": "List of localized images"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/ImageLocalizeMetadata",
+            "description": "Image generation metadata including cost and count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "images",
+          "metadata"
+        ],
+        "title": "ImageLocalizeResponse",
+        "description": "Response model for image localization results.\n\nShares the same shape as ImageCulturalizeResponse so downstream consumers\ncan handle both with one code path, but is a distinct type so the two\nfeatures can evolve independently."
+      },
+      "ImageLocalizeMetadata": {
+        "properties": {
+          "cost": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cost",
+            "description": "Total cost in credits for image generation"
+          },
+          "num_images": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Num Images",
+            "description": "Number of images generated"
+          },
+          "mask_applied": {
+            "type": "boolean",
+            "title": "Mask Applied",
+            "default": false
+          },
+          "region_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Region Count",
+            "default": 0
+          },
+          "applied_region_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Applied Region Count",
+            "default": 0
+          },
+          "skipped_region_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Skipped Region Count",
+            "default": 0
+          },
+          "deterministic_region_count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Deterministic Region Count",
+            "default": 0
+          },
+          "provider_calls": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Provider Calls",
+            "default": 0
+          },
+          "no_op": {
+            "type": "boolean",
+            "title": "No Op",
+            "default": false
+          },
+          "rtl": {
+            "type": "boolean",
+            "title": "Rtl",
+            "description": "Whether right-to-left rendering rules were applied",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "cost",
+          "num_images"
+        ],
+        "title": "ImageLocalizeMetadata",
+        "description": "Image-localization diagnostics, including mask enforcement."
+      },
+      "ImageData": {
+        "properties": {
+          "image_base64": {
+            "type": "string",
+            "title": "Image Base64",
+            "description": "Base64 encoded generated image"
+          }
+        },
+        "type": "object",
+        "required": [
+          "image_base64"
+        ],
+        "title": "ImageData",
+        "description": "Individual image data."
+      },
+      "Body_localize_image_image_localize_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "mask": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mask"
+          },
+          "region_masks": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "contentMediaType": "application/octet-stream"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Masks"
+          },
+          "replacements": {
+            "type": "string",
+            "title": "Replacements"
+          },
+          "region_replacements": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Replacements"
+          },
+          "ai_replacements": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Replacements"
+          },
+          "ai_region_replacements": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Region Replacements"
+          },
+          "review_regions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Regions"
+          },
+          "mask_required": {
+            "type": "boolean",
+            "title": "Mask Required",
+            "default": false
+          },
+          "language_code": {
+            "type": "string",
+            "title": "Language Code"
+          },
+          "output_format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Format",
+            "default": "png"
+          },
+          "tool": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool",
+            "default": "api"
+          },
+          "num_images": {
+            "type": "integer",
+            "title": "Num Images",
+            "default": 1
+          },
+          "quality": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quality"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context"
+          },
+          "rtl": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rtl"
+          },
+          "figma_file_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma File Key"
+          },
+          "figma_file_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma File Name"
+          },
+          "figma_frame_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma Frame Id"
+          },
+          "figma_frame_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma Frame Name"
+          },
+          "figma_text_node_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma Text Node Id"
+          },
+          "figma_batch_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Figma Batch Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "replacements",
+          "language_code"
+        ],
+        "title": "Body_localize_image_image_localize_post"
+      },
+      "ImageInspectResponse": {
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "SAFE",
+              "NOT SAFE"
+            ],
+            "title": "Verdict",
+            "description": "Overall safety verdict for the image"
+          },
+          "affected_countries": {
+            "items": {
+              "$ref": "#/components/schemas/AffectedCountry"
+            },
+            "type": "array",
+            "title": "Affected Countries",
+            "description": "List of countries with cultural sensitivity issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "verdict",
+          "affected_countries"
+        ],
+        "title": "ImageInspectResponse",
+        "description": "Response model for image cultural sensitivity inspection."
+      },
+      "AffectedCountry": {
+        "properties": {
+          "country": {
+            "type": "string",
+            "title": "Country",
+            "description": "Specific country name"
+          },
+          "issue": {
+            "type": "string",
+            "title": "Issue",
+            "description": "Precise description of the problematic element and why it's inappropriate in this cultural context"
+          },
+          "suggestion": {
+            "type": "string",
+            "title": "Suggestion",
+            "description": "Concrete, actionable recommendation to fix the issue while maintaining creative intent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "country",
+          "issue",
+          "suggestion"
+        ],
+        "title": "AffectedCountry",
+        "description": "Individual country affected by cultural sensitivity issues."
+      },
+      "Body_inspect_image_cultural_sensitivity_image_inspect_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Countries",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_inspect_image_cultural_sensitivity_image_inspect_post"
+      },
+      "AudioPreviewResponse": {
+        "properties": {
+          "audio_base64": {
+            "type": "string",
+            "title": "Audio Base64"
+          },
+          "mime_type": {
+            "type": "string",
+            "title": "Mime Type",
+            "default": "audio/wav"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "voice_id": {
+            "type": "string",
+            "title": "Voice Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio_base64",
+          "duration_ms",
+          "provider",
+          "voice_id"
+        ],
+        "title": "AudioPreviewResponse"
+      },
+      "AudioPreviewRequest": {
+        "properties": {
+          "voice_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Voice Id"
+          },
+          "language_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language Code"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "voice_id"
+        ],
+        "title": "AudioPreviewRequest"
+      },
+      "AudioConsentScriptResponse": {
+        "properties": {
+          "locale": {
+            "type": "string",
+            "title": "Locale"
+          },
+          "consent_script": {
+            "type": "string",
+            "title": "Consent Script"
+          },
+          "reference_script": {
+            "type": "string",
+            "title": "Reference Script"
+          },
+          "min_seconds": {
+            "type": "integer",
+            "title": "Min Seconds",
+            "default": 4
+          },
+          "max_seconds": {
+            "type": "integer",
+            "title": "Max Seconds",
+            "default": 15
+          },
+          "chirp_clone_supported": {
+            "type": "boolean",
+            "title": "Chirp Clone Supported",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "locale",
+          "consent_script",
+          "reference_script"
+        ],
+        "title": "AudioConsentScriptResponse"
+      },
+      "AudioVoicesResponse": {
+        "properties": {
+          "voices": {
+            "items": {
+              "$ref": "#/components/schemas/AudioVoice"
+            },
+            "type": "array",
+            "title": "Voices"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          }
+        },
+        "type": "object",
+        "required": [
+          "voices",
+          "provider"
+        ],
+        "title": "AudioVoicesResponse"
+      },
+      "AudioVoice": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "gender": {
+            "type": "string",
+            "title": "Gender"
+          },
+          "locale": {
+            "type": "string",
+            "title": "Locale"
+          },
+          "accent_label": {
+            "type": "string",
+            "title": "Accent Label"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "default": "preset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "gender",
+          "locale",
+          "accent_label",
+          "provider"
+        ],
+        "title": "AudioVoice"
+      },
+      "AudioVideoRegisterResponse": {
+        "properties": {
+          "video_id": {
+            "type": "string",
+            "title": "Video Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "video_id"
+        ],
+        "title": "AudioVideoRegisterResponse"
+      },
+      "Body_register_source_video_audio_video_register_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "enterprise_long_form": {
+            "type": "boolean",
+            "title": "Enterprise Long Form",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_register_source_video_audio_video_register_post"
+      },
+      "AudioTranscribeResponse": {
+        "properties": {
+          "transcript": {
+            "type": "string",
+            "title": "Transcript"
+          },
+          "detected_language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detected Language"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/AudioTranscriptSegment"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "estimated_credit_cost": {
+            "type": "integer",
+            "title": "Estimated Credit Cost"
+          },
+          "billed_seconds": {
+            "type": "integer",
+            "title": "Billed Seconds"
+          },
+          "stem_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stem Id"
+          },
+          "bed_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bed Mode"
+          },
+          "video_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Id"
+          },
+          "source_voice_audio_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Voice Audio Base64"
+          },
+          "speech_islands": {
+            "items": {
+              "$ref": "#/components/schemas/SpeechEnergyIsland"
+            },
+            "type": "array",
+            "title": "Speech Islands"
+          },
+          "speakers": {
+            "items": {
+              "$ref": "#/components/schemas/AudioSpeakerProfile"
+            },
+            "type": "array",
+            "title": "Speakers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transcript",
+          "duration_ms",
+          "segments",
+          "provider",
+          "estimated_credit_cost",
+          "billed_seconds"
+        ],
+        "title": "AudioTranscribeResponse"
+      },
+      "AudioSpeakerProfile": {
+        "properties": {
+          "speaker_id": {
+            "type": "string",
+            "title": "Speaker Id"
+          },
+          "speech_ms": {
+            "type": "integer",
+            "title": "Speech Ms"
+          },
+          "gender": {
+            "type": "string",
+            "title": "Gender",
+            "default": "unknown"
+          },
+          "clone_eligible": {
+            "type": "boolean",
+            "title": "Clone Eligible",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "speaker_id",
+          "speech_ms"
+        ],
+        "title": "AudioSpeakerProfile"
+      },
+      "SpeechEnergyIsland": {
+        "properties": {
+          "start_ms": {
+            "type": "integer",
+            "title": "Start Ms",
+            "default": 0
+          },
+          "end_ms": {
+            "type": "integer",
+            "title": "End Ms",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "SpeechEnergyIsland"
+      },
+      "AudioTranscriptSegment": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "start_ms": {
+            "type": "integer",
+            "title": "Start Ms",
+            "default": 0
+          },
+          "end_ms": {
+            "type": "integer",
+            "title": "End Ms",
+            "default": 0
+          },
+          "speaker_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaker Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text"
+        ],
+        "title": "AudioTranscriptSegment"
+      },
+      "Body_transcribe_audio_transcribe_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "source_language_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Language Code"
+          },
+          "keep_background_music": {
+            "type": "boolean",
+            "title": "Keep Background Music",
+            "default": false
+          },
+          "speaker_count": {
+            "type": "integer",
+            "title": "Speaker Count",
+            "default": 1
+          },
+          "enterprise_long_form": {
+            "type": "boolean",
+            "title": "Enterprise Long Form",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_transcribe_audio_transcribe_post"
+      },
+      "AudioSynthesizeResponse": {
+        "properties": {
+          "audio_base64": {
+            "type": "string",
+            "title": "Audio Base64"
+          },
+          "mime_type": {
+            "type": "string",
+            "title": "Mime Type",
+            "default": "audio/wav"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/AudioSynthesizeMetadata"
+          },
+          "video_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Base64"
+          },
+          "video_mime_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Mime Type"
+          },
+          "voice_audio_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Audio Base64"
+          },
+          "voice_video_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Video Base64"
+          },
+          "bed_audio_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bed Audio Base64"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio_base64",
+          "metadata"
+        ],
+        "title": "AudioSynthesizeResponse"
+      },
+      "AudioSynthesizeMetadata": {
+        "properties": {
+          "cost": {
+            "type": "integer",
+            "title": "Cost"
+          },
+          "billed_seconds": {
+            "type": "integer",
+            "title": "Billed Seconds"
+          },
+          "credits_per_second": {
+            "type": "integer",
+            "title": "Credits Per Second"
+          },
+          "audio_cost": {
+            "type": "integer",
+            "title": "Audio Cost"
+          },
+          "text_cost": {
+            "type": "integer",
+            "title": "Text Cost"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "title": "Duration Ms"
+          },
+          "source_duration_ms": {
+            "type": "integer",
+            "title": "Source Duration Ms"
+          },
+          "speaking_rate": {
+            "type": "number",
+            "title": "Speaking Rate"
+          },
+          "duration_match": {
+            "type": "string",
+            "title": "Duration Match"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "voice_id": {
+            "type": "string",
+            "title": "Voice Id"
+          },
+          "mixed_with_bed": {
+            "type": "boolean",
+            "title": "Mixed With Bed",
+            "default": false
+          },
+          "bed_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bed Mode"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cost",
+          "billed_seconds",
+          "credits_per_second",
+          "audio_cost",
+          "text_cost",
+          "duration_ms",
+          "source_duration_ms",
+          "speaking_rate",
+          "duration_match",
+          "provider",
+          "voice_id"
+        ],
+        "title": "AudioSynthesizeMetadata"
+      },
+      "AudioSynthesizeRequest": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Language"
+          },
+          "language_code": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Language Code"
+          },
+          "voice_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Voice Id"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/AudioSynthesizeSegment"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Segments"
+          },
+          "keep_same_length": {
+            "type": "boolean",
+            "title": "Keep Same Length",
+            "default": false
+          },
+          "keep_background_music": {
+            "type": "boolean",
+            "title": "Keep Background Music",
+            "default": false
+          },
+          "stem_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stem Id"
+          },
+          "source_duration_ms": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Source Duration Ms",
+            "default": 0
+          },
+          "source_transcript": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Transcript"
+          },
+          "document_translation": {
+            "type": "boolean",
+            "title": "Document Translation",
+            "default": false
+          },
+          "enterprise_long_form": {
+            "type": "boolean",
+            "title": "Enterprise Long Form",
+            "default": false
+          },
+          "speech_islands": {
+            "items": {
+              "$ref": "#/components/schemas/SpeechEnergyIsland"
+            },
+            "type": "array",
+            "title": "Speech Islands"
+          },
+          "tool": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool",
+            "default": "dashboard"
+          },
+          "video_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Id"
+          },
+          "speaker_voices": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaker Voices"
+          }
+        },
+        "type": "object",
+        "required": [
+          "language",
+          "language_code",
+          "voice_id",
+          "segments"
+        ],
+        "title": "AudioSynthesizeRequest"
+      },
+      "AudioSynthesizeSegment": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Text"
+          },
+          "original": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original"
+          },
+          "ai_translated": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Translated"
+          },
+          "start_ms": {
+            "type": "integer",
+            "title": "Start Ms",
+            "default": 0
+          },
+          "end_ms": {
+            "type": "integer",
+            "title": "End Ms",
+            "default": 0
+          },
+          "tm_match_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tm Match Score"
+          },
+          "tm_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tm Id"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale"
+          },
+          "backtranslation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backtranslation"
+          },
+          "approved": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved"
+          },
+          "tm_top_matches": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tm Top Matches"
+          },
+          "speaker_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaker Id"
+          },
+          "language_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language Code"
+          },
+          "voice_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "AudioSynthesizeSegment"
+      },
+      "Body_extract_script_upload_audio_script_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_extract_script_upload_audio_script_post"
+      },
+      "AudioRemuxResponse": {
+        "properties": {
+          "video_base64": {
+            "type": "string",
+            "title": "Video Base64"
+          },
+          "video_mime_type": {
+            "type": "string",
+            "title": "Video Mime Type",
+            "default": "video/mp4"
+          }
+        },
+        "type": "object",
+        "required": [
+          "video_base64"
+        ],
+        "title": "AudioRemuxResponse"
+      },
+      "AudioRemuxRequest": {
+        "properties": {
+          "video_id": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 32,
+            "title": "Video Id"
+          },
+          "audio_base64": {
+            "type": "string",
+            "maxLength": 20000000,
+            "minLength": 1,
+            "title": "Audio Base64"
+          }
+        },
+        "type": "object",
+        "required": [
+          "video_id",
+          "audio_base64"
+        ],
+        "title": "AudioRemuxRequest"
+      }
+    }
+  }
+}

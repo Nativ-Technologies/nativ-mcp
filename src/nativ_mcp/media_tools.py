@@ -8,12 +8,15 @@ from typing import Any
 
 from mcp.server import MCPServer
 
+from nativ_mcp.runtime import hosted_request
+
 
 def register_media_tools(
     mcp: MCPServer,
     get_client: Any,
     read_local_file: Any,
     save_base64: Any,
+    save_subtitle: Any,
 ) -> None:
     def _omit_media(payload: dict[str, Any]) -> dict[str, Any]:
         skip = {
@@ -33,19 +36,19 @@ def register_media_tools(
         source_language_code: str = "",
         keep_background_music: bool = False,
     ) -> str:
-        """Transcribe speech from a local audio or video file (unbilled draft).
+        """Transcribe speech from an audio or video file (unbilled draft).
 
         Use the returned segments with `translate` (origin via text) then
         `synthesize_audio` to produce a dubbed track. Video uploads also
         return a video_id for muxing.
 
         Args:
-            file_path: Path to audio (mp3, wav, m4a, …) or video (mp4, mov, …).
+            file_path: Public HTTPS URL (hosted) or local path (stdio) to audio (mp3, wav, m4a, …) or video (mp4, mov, …).
             source_language_code: Optional source language hint (e.g. "en").
             keep_background_music: If true, split a music bed for later remix.
         """
         client = get_client()
-        data, filename, content_type = read_local_file(file_path)
+        data, filename, content_type = await read_local_file(file_path)
         result = await client.transcribe_audio(
             data,
             filename,
@@ -82,7 +85,7 @@ def register_media_tools(
     async def parse_audio_script(file_path: str) -> str:
         """Parse a script file (.txt, .docx, .pdf, .srt, .itt) instead of STT."""
         client = get_client()
-        data, filename, content_type = read_local_file(file_path)
+        data, filename, content_type = await read_local_file(file_path)
         result = await client.parse_audio_script(data, filename, content_type)
         return json.dumps(_omit_media(result), indent=2, ensure_ascii=False)
 
@@ -107,15 +110,15 @@ def register_media_tools(
     @mcp.tool()
     async def preview_voice(
         voice_id: str,
-        output_path: str,
+        output_path: str = "preview.wav",
         language_code: str = "",
         text: str = "",
     ) -> str:
-        """Generate a short TTS preview and save it to disk.
+        """Generate a short TTS preview. Hosted mode returns a download URL.
 
         Args:
             voice_id: Voice id from `list_voices`.
-            output_path: Where to write the WAV file.
+            output_path: Output filename hint (hosted) or WAV path (stdio).
             language_code: Optional locale.
             text: Optional preview line (max 200 chars).
         """
@@ -126,7 +129,7 @@ def register_media_tools(
             text=text or None,
         )
         out = os.path.expanduser(output_path)
-        save_base64(result.get("audio_base64", ""), out)
+        out = await save_base64(result.get("audio_base64", ""), out)
         return (
             f"Saved preview to {out} ({result.get('duration_ms')} ms, "
             f"{result.get('mime_type')}, provider {result.get('provider')})"
@@ -145,7 +148,7 @@ def register_media_tools(
         language_code: str,
         voice_id: str,
         segments: str,
-        output_path: str,
+        output_path: str = "dubbed.wav",
         keep_same_length: bool = False,
         keep_background_music: bool = False,
         stem_id: str = "",
@@ -154,14 +157,14 @@ def register_media_tools(
         video_id: str = "",
         video_output_path: str = "",
     ) -> str:
-        """Generate billed localized TTS (and optional dubbed video).
+        """Generate billed localized TTS (and optional dubbed video). Hosted mode returns download URLs.
 
         Args:
             language: Target language name (e.g. "French").
             language_code: Target language code (e.g. "fr").
             voice_id: Voice id from `list_voices`.
             segments: JSON array of {text, start_ms, end_ms, original?} objects.
-            output_path: Path to write the WAV audio.
+            output_path: Output filename hint (hosted) or WAV path (stdio).
             keep_same_length: Stretch/compress speech to source timings.
             keep_background_music: Mix transcribed music bed when stem_id is set.
             stem_id: Optional bed stem from `transcribe_audio`.
@@ -197,9 +200,9 @@ def register_media_tools(
         client = get_client()
         result = await client.synthesize_audio(body)
         audio_out = os.path.expanduser(output_path)
-        save_base64(result.get("audio_base64", ""), audio_out)
+        audio_url = await save_base64(result.get("audio_base64", ""), audio_out)
         lines = [
-            f"**Dubbed audio saved:** {audio_out}",
+            f"**Dubbed audio saved:** {audio_url}",
             json.dumps(result.get("metadata") or {}, indent=2, ensure_ascii=False),
         ]
         video_b64 = result.get("video_base64")
@@ -207,7 +210,7 @@ def register_media_tools(
             vout = os.path.expanduser(video_output_path) if video_output_path else (
                 os.path.splitext(audio_out)[0] + ".mp4"
             )
-            save_base64(video_b64, vout)
+            vout = await save_base64(video_b64, vout)
             lines.append(f"**Dubbed video saved:** {vout}")
         return "\n".join(lines)
 
@@ -215,7 +218,7 @@ def register_media_tools(
     async def register_video(file_path: str) -> str:
         """Upload a source video for later remuxing. Returns video_id."""
         client = get_client()
-        data, filename, content_type = read_local_file(file_path)
+        data, filename, content_type = await read_local_file(file_path)
         result = await client.register_video(data, filename, content_type)
         return f"video_id: {result.get('video_id')}"
 
@@ -223,30 +226,30 @@ def register_media_tools(
     async def remux_video(
         video_id: str,
         audio_path: str,
-        output_path: str,
+        output_path: str = "dubbed.mp4",
     ) -> str:
         """Mux a WAV file onto a previously registered video.
 
         Args:
             video_id: Id from `register_video` or `transcribe_audio`.
-            audio_path: Local WAV (or other) file to encode as base64.
-            output_path: Where to write the MP4.
+            audio_path: Public HTTPS audio URL (hosted) or local file path (stdio).
+            output_path: Output filename hint (hosted) or MP4 path (stdio).
         """
         import base64
 
         client = get_client()
-        audio_bytes, _, _ = read_local_file(audio_path)
+        audio_bytes, _, _ = await read_local_file(audio_path)
         audio_b64 = base64.b64encode(audio_bytes).decode("ascii")
         result = await client.remux_video(video_id, audio_b64)
         out = os.path.expanduser(output_path)
-        save_base64(result.get("video_base64", ""), out)
+        out = await save_base64(result.get("video_base64", ""), out)
         return f"Saved remuxed video to {out} ({result.get('video_mime_type')})"
 
     @mcp.tool()
     async def parse_subtitle(file_path: str) -> str:
-        """Parse a local SRT/ITT file into timed cues (no storage)."""
+        """Parse an SRT/ITT file into timed cues (no storage)."""
         client = get_client()
-        data, filename, content_type = read_local_file(file_path)
+        data, filename, content_type = await read_local_file(file_path)
         result = await client.parse_subtitle(data, filename, content_type)
         cues = result.get("cues") or []
         lines = [
@@ -275,13 +278,13 @@ def register_media_tools(
 
         Args:
             target_language_codes: Comma-separated codes (e.g. "fr,de,ja").
-            subtitle_path: Optional local subtitle file.
-            video_path: Optional video used when no subtitle file is given.
-            glossary_path: Optional glossary text file.
+            subtitle_path: Optional public HTTPS subtitle URL (hosted) or local path (stdio).
+            video_path: Optional public HTTPS video URL (hosted) or local path (stdio) for STT.
+            glossary_path: Optional public HTTPS glossary URL (hosted) or local path (stdio).
             source_language_code: Source language code.
             context: Optional localization context.
             formality: Optional formality override.
-            output_dir: If set, write one .srt per language there.
+            output_dir: Local output directory (stdio). Hosted mode always returns subtitle download URLs.
         """
         codes = [c.strip() for c in target_language_codes.split(",") if c.strip()]
         if not codes:
@@ -289,9 +292,9 @@ def register_media_tools(
         if not subtitle_path and not video_path:
             return "Provide subtitle_path and/or video_path."
 
-        subtitle = read_local_file(subtitle_path) if subtitle_path else None
-        video = read_local_file(video_path) if video_path else None
-        glossary = read_local_file(glossary_path) if glossary_path else None
+        subtitle = await read_local_file(subtitle_path) if subtitle_path else None
+        video = await read_local_file(video_path) if video_path else None
+        glossary = await read_local_file(glossary_path) if glossary_path else None
         client = get_client()
         result = await client.localize_subtitles(
             codes,
@@ -309,18 +312,14 @@ def register_media_tools(
         if result.get("video_id"):
             lines.append(f"video_id: {result['video_id']}")
         out_dir = os.path.expanduser(output_dir) if output_dir else ""
-        if out_dir:
-            os.makedirs(out_dir, exist_ok=True)
         for lang in result.get("languages") or []:
             code = lang.get("language_code") or "lang"
             srt = lang.get("srt_utf8") or ""
             lines.append(
                 f"\n**{lang.get('language')} ({code})** — {len(lang.get('cues') or [])} cues"
             )
-            if out_dir and srt:
-                path = os.path.join(out_dir, f"{code}.srt")
-                with open(path, "w", encoding="utf-8") as fh:
-                    fh.write(srt)
+            if srt and (out_dir or hosted_request.get() is not None):
+                path = await save_subtitle(srt, os.path.join(out_dir, f"{code}.srt"))
                 lines.append(f"Saved {path}")
             else:
                 preview = "\n".join(

@@ -21,6 +21,12 @@ AI-powered localization for any MCP-compatible tool — [Claude Code](https://do
 
 ## Quick Start
 
+For a remote Streamable HTTP connection, see [Hosted MCP](docs/hosting.md).
+Hosted calls use your API key in `X-API-Key`; the stdio setup below uses
+`NATIV_API_KEY` in the environment.
+JSON-only API clients can import [the tools schema](https://mcp.usenativ.com/json-openapi.json)
+and call `/tools/{tool_name}` with HTTPS media URLs.
+
 ### 1. Get a Nativ API Key
 
 Sign up at [dashboard.usenativ.com](https://dashboard.usenativ.com), go to **Settings → API Keys**, and create a key. It looks like `nativ_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`.

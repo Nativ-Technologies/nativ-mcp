@@ -35,8 +35,16 @@ dependencies = [
     "httpx>=0.27.0",
 ]
 
+[project.optional-dependencies]
+hosted = [
+    "google-cloud-storage>=3.0.0,<4",
+    "uvicorn>=0.30.0,<1",
+    "jsonschema>=4.20.0,<5",
+]
+
 [project.scripts]
 nativ-mcp = "nativ_mcp.server:main"
+nativ-mcp-http = "nativ_mcp.hosted:main"
 
 [project.urls]
 Homepage = "https://usenativ.com"
@@ -50,3 +58,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nativ_mcp"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/nativ_mcp/rest-openapi.json" = "nativ_mcp/rest-openapi.json"

@@ -9,24 +9,30 @@ MCP-compatible AI tool (Claude Code, Cursor, Windsurf, etc.).
 import os
 import sys
 import json
-import base64
 import logging
+from urllib.parse import urlparse
 from typing import Any
 
 from mcp.server import MCPServer
 
 from nativ_mcp.client import NativClient
+from nativ_mcp.files import read_file as _read_local_file, read_image as _read_local_image
+from nativ_mcp.files import save_base64 as _save_base64_image, save_subtitle
+from nativ_mcp.runtime import hosted_request
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 logger = logging.getLogger("nativ-mcp")
+# Signed media URLs must not appear in httpx request logs.
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 def _get_client() -> NativClient:
-    """Build a NativClient from env vars. Raises on missing key."""
-    api_key = os.environ.get("NATIV_API_KEY")
+    """Use the hosted caller's key, or the stdio environment key."""
+    remote = hosted_request.get()
+    api_key = remote.api_key if remote is not None else os.environ.get("NATIV_API_KEY")
     if not api_key:
         raise RuntimeError(
             "NATIV_API_KEY environment variable is required. "
@@ -39,70 +45,6 @@ def _get_client() -> NativClient:
 def _fmt_json(data: Any) -> str:
     """Pretty-print JSON for LLM consumption."""
     return json.dumps(data, indent=2, ensure_ascii=False, default=str)
-
-
-_IMAGE_CONTENT_TYPES = {
-    ".png": "image/png",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".webp": "image/webp",
-}
-
-
-def _read_local_image(image_path: str) -> tuple[bytes, str, str]:
-    """Read a local image file, returning (bytes, filename, content_type)."""
-    expanded = os.path.expanduser(image_path)
-    if not os.path.isfile(expanded):
-        raise RuntimeError(f"Image file not found: {image_path}")
-    ext = os.path.splitext(expanded)[1].lower()
-    content_type = _IMAGE_CONTENT_TYPES.get(ext)
-    if content_type is None:
-        raise RuntimeError(
-            f"Unsupported image type '{ext or 'unknown'}'. Supported: PNG, JPEG, WebP."
-        )
-    with open(expanded, "rb") as f:
-        return f.read(), os.path.basename(expanded), content_type
-
-
-def _read_local_file(path: str) -> tuple[bytes, str, str]:
-    expanded = os.path.expanduser(path)
-    if not os.path.isfile(expanded):
-        raise RuntimeError(f"File not found: {path}")
-    with open(expanded, "rb") as f:
-        data = f.read()
-    filename = os.path.basename(expanded)
-    ext = os.path.splitext(expanded)[1].lower()
-    types = {
-        **_IMAGE_CONTENT_TYPES,
-        ".wav": "audio/wav",
-        ".mp3": "audio/mpeg",
-        ".m4a": "audio/mp4",
-        ".aac": "audio/aac",
-        ".ogg": "audio/ogg",
-        ".flac": "audio/flac",
-        ".mp4": "video/mp4",
-        ".mov": "video/quicktime",
-        ".mkv": "video/x-matroska",
-        ".webm": "video/webm",
-        ".srt": "application/x-subrip",
-        ".itt": "application/xml",
-        ".txt": "text/plain",
-        ".pdf": "application/pdf",
-        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    }
-    return data, filename, types.get(ext, "application/octet-stream")
-
-
-def _save_base64_image(b64: str, out_path: str) -> None:
-    """Decode a base64 image (raw or data URL) and write it to disk."""
-    if b64.strip().startswith("data:") and "," in b64:
-        b64 = b64.split(",", 1)[1]
-    data = base64.b64decode(b64)
-    out_dir = os.path.dirname(out_path)
-    if out_dir:
-        os.makedirs(out_dir, exist_ok=True)
-    with open(out_path, "wb") as f:
-        f.write(data)
 
 
 # ---------------------------------------------------------------------------
@@ -427,17 +369,17 @@ async def extract_image_text(image_path: str) -> str:
     guides, and brand voice apply), then re-render with `localize_image`.
 
     Args:
-        image_path: Path to a local PNG, JPEG, or WebP image file.
+        image_path: Public HTTPS URL (hosted) or local path (stdio) to a PNG, JPEG, or WebP image file.
     """
     client = _get_client()
-    image_bytes, filename, content_type = _read_local_image(image_path)
+    image_bytes, filename, content_type = await _read_local_image(image_path)
     result = await client.extract_image_segments(image_bytes, filename, content_type)
 
     segments = [s.get("text", "") for s in result.get("segments", []) if s.get("text")]
     if not segments:
-        return f"No text found in {os.path.basename(image_path)}."
+        return f"No text found in {filename}."
 
-    lines = [f"**Extracted {len(segments)} text segment(s) from {os.path.basename(image_path)}:**\n"]
+    lines = [f"**Extracted {len(segments)} text segment(s) from {filename}:**\n"]
     for i, seg in enumerate(segments, 1):
         lines.append(f"{i}. {seg}")
     return "\n".join(lines)
@@ -460,10 +402,11 @@ async def localize_image(
     translate them with TM and brand voice) for a full image localization flow.
 
     The localized image is saved to disk and the file path is returned — the
-    raw image bytes are not sent back to the model.
+    raw image bytes are not sent back to the model. Hosted mode returns a
+    download URL instead of writing to a local path.
 
     Args:
-        image_path: Path to a local PNG, JPEG, or WebP image to localize.
+        image_path: Public HTTPS URL (hosted) or local path (stdio) to a PNG, JPEG, or WebP image to localize.
         replacements: JSON array of {"original": "...", "translated": "..."} pairs,
             e.g. '[{"original": "Buy now", "translated": "Achetez maintenant"}]'.
         target_language_code: Target language code (e.g. "fr-FR"), used for labelling output.
@@ -485,7 +428,7 @@ async def localize_image(
     if not isinstance(parsed, list) or not parsed:
         return '`replacements` must be a non-empty JSON array of {"original", "translated"} objects.'
 
-    image_bytes, filename, content_type = _read_local_image(image_path)
+    image_bytes, filename, content_type = await _read_local_image(image_path)
     result = await client.localize_image(
         image_bytes,
         filename,
@@ -500,7 +443,8 @@ async def localize_image(
     if not images:
         return "No localized image was returned by Nativ."
 
-    base, _ = os.path.splitext(os.path.expanduser(image_path))
+    source_name = urlparse(image_path).path if hosted_request.get() is not None else os.path.expanduser(image_path)
+    base, _ = os.path.splitext(source_name)
     saved: list[str] = []
     for idx, img in enumerate(images):
         b64 = img.get("image_base64")
@@ -515,8 +459,7 @@ async def localize_image(
         else:
             suffix = f"_{idx + 1}" if len(images) > 1 else ""
             out = f"{base}.{target_language_code}{suffix}.{output_format}"
-        _save_base64_image(b64, out)
-        saved.append(out)
+        saved.append(await _save_base64_image(b64, out))
 
     if not saved:
         return "Nativ returned a response but no image data could be decoded."
@@ -537,12 +480,12 @@ async def check_image_cultural_fit(image_path: str, countries: str = "") -> str:
     countries affected with the issue and a concrete fix.
 
     Args:
-        image_path: Path to a local PNG, JPEG, or WebP image.
+        image_path: Public HTTPS URL (hosted) or local path (stdio) to a PNG, JPEG, or WebP image.
         countries: Optional comma-separated list of countries to check against
             (e.g. "Saudi Arabia, Japan, France"). Defaults to the top markets by GDP.
     """
     client = _get_client()
-    image_bytes, filename, content_type = _read_local_image(image_path)
+    image_bytes, filename, content_type = await _read_local_image(image_path)
     country_list = [c.strip() for c in countries.split(",") if c.strip()] if countries else []
     result = await client.inspect_image(
         image_bytes, filename, content_type, countries=country_list
@@ -564,7 +507,7 @@ async def check_image_cultural_fit(image_path: str, countries: str = "") -> str:
 
 from nativ_mcp.media_tools import register_media_tools
 
-register_media_tools(mcp, _get_client, _read_local_file, _save_base64_image)
+register_media_tools(mcp, _get_client, _read_local_file, _save_base64_image, save_subtitle)
 
 
 # ===================== RESOURCES =====================
