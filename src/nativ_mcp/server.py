@@ -10,6 +10,10 @@ import os
 import sys
 import json
 import logging
+import asyncio
+import time
+import uuid
+import httpx
 from urllib.parse import urlparse
 from typing import Any
 
@@ -22,6 +26,7 @@ from nativ_mcp.runtime import hosted_request
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 logger = logging.getLogger("nativ-mcp")
+_BATCH_DEADLINE_SECONDS = 240
 # Signed media URLs must not appear in httpx request logs.
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
@@ -141,7 +146,8 @@ async def translate_batch(
     """Translate multiple texts to a single target language.
 
     Useful for localizing lists of strings, UI labels, or i18n files.
-    Each text is translated individually using the team's TM and style guides.
+    Texts are translated together using the team's TM and style guides.
+    A failed or incomplete batch is a tool error; do not synthesize its output.
 
     Args:
         texts: List of texts to translate.
@@ -153,29 +159,33 @@ async def translate_batch(
         formality: Tone override for all translations.
     """
     client = _get_client()
+    batch_id = uuid.uuid4().hex
+    started = time.monotonic()
+    logger.info("event=mcp_batch_start batch_id=%s tool=translate_batch items=%s", batch_id, len(texts))
+    try:
+        translated_results = await asyncio.wait_for(client.translate_batch(
+            texts, target_language, language_code=target_language_code or None,
+            source_language=source_language, source_language_code=source_language_code,
+            context=context or None, formality=formality or None,
+        ), timeout=_BATCH_DEADLINE_SECONDS)
+    except TimeoutError as exc:
+        logger.warning("event=mcp_batch_timeout batch_id=%s elapsed_s=%.3f", batch_id, time.monotonic() - started)
+        raise RuntimeError("Batch translation exceeded its 240-second deadline. No complete batch was returned; split the input before trying again.") from exc
+    except Exception as exc:
+        logger.warning("event=mcp_batch_failed batch_id=%s error_type=%s elapsed_s=%.3f", batch_id, type(exc).__name__, time.monotonic() - started)
+        if isinstance(exc, httpx.TimeoutException):
+            raise RuntimeError("Nativ timed out during batch translation. No complete batch was returned.") from exc
+        if isinstance(exc, httpx.HTTPStatusError):
+            status = exc.response.status_code
+            reason = " The backend translation deadline was exceeded." if status == 504 else ""
+            raise RuntimeError(f"Nativ batch translation failed (HTTP {status}).{reason} No complete batch was returned.") from exc
+        raise
+    logger.info("event=mcp_batch_complete batch_id=%s items=%s elapsed_s=%.3f", batch_id, len(texts), time.monotonic() - started)
     results = []
-    for i, text in enumerate(texts):
-        try:
-            result = await client.translate(
-                text=text,
-                language=target_language,
-                language_code=target_language_code or None,
-                source_language=source_language,
-                source_language_code=source_language_code,
-                context=context or None,
-                formality=formality or None,
-                include_tm_info=True,
-                backtranslate=False,
-                include_rationale=False,
-            )
-            translated = result.get("translated_text", "")
-            tm = result.get("tm_match")
-            tm_note = ""
-            if tm and tm.get("score", 0) > 0:
-                tm_note = f" (TM {tm['score']:.0f}%)"
-            results.append(f"{i+1}. \"{text}\" → \"{translated}\"{tm_note}")
-        except Exception as e:
-            results.append(f"{i+1}. \"{text}\" → ERROR: {e}")
+    for i, (text, result) in enumerate(zip(texts, translated_results)):
+        tm = result.get("tm_match")
+        tm_note = f" (TM {tm['score']:.0f}%)" if tm and tm.get("score", 0) > 0 else ""
+        results.append(f"{i+1}. \"{text}\" → \"{result['translated_text']}\"{tm_note}")
 
     header = f"**Batch translation to {target_language}** ({len(texts)} items):\n"
     return header + "\n".join(results)

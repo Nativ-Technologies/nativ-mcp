@@ -110,6 +110,51 @@ class NativClient:
             body["max_characters"] = max_characters
         return await self._request("POST", "/text/culturalize", json_body=body)
 
+    async def translate_batch(
+        self, texts: list[str], language: str, *, language_code: str | None = None,
+        source_language: str = "English", source_language_code: str = "en",
+        context: str | None = None, formality: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Use the backend's shared-context batch path, preserving input order."""
+        if not texts:
+            return []
+        chunks: list[list[str]] = []
+        current: list[str] = []
+        for text in texts:
+            if len(json.dumps([text], ensure_ascii=False)) > 50000:
+                raise ValueError("A batch segment exceeds the 50,000-character API limit.")
+            if current and (len(current) >= 32 or len(json.dumps(current + [text], ensure_ascii=False)) > 50000):
+                chunks.append(current)
+                current = []
+            current.append(text)
+        if current:
+            chunks.append(current)
+        results = []
+        for chunk in chunks:
+            body = {
+                "text": json.dumps(chunk, ensure_ascii=False), "language": language,
+                "source_language": source_language, "source_language_code": source_language_code,
+                "tool": "api", "origin": "mcp_batch_translation",
+                "include_tm_info": True, "include_rationale": False, "backtranslate": False,
+            }
+            for name, value in (("language_code", language_code), ("context", context), ("formality", formality)):
+                if value:
+                    body[name] = value
+            result = await self._request("POST", "/text/culturalize", json_body=body)
+            try:
+                translated = json.loads(result["translated_text"])
+            except (KeyError, TypeError, ValueError) as exc:
+                raise RuntimeError("Nativ did not return a valid batch. Deploy the batch-enabled backend before this MCP release.") from exc
+            if (not isinstance(translated, list) or len(translated) != len(chunk)
+                    or any(not isinstance(t, str) or (source.strip() and not t.strip())
+                           for source, t in zip(chunk, translated))):
+                raise RuntimeError("Nativ returned an incomplete batch; no successful batch is being reported.")
+            details = result.get("segment_details") or []
+            for i, text in enumerate(translated):
+                detail = details[i] if i < len(details) and isinstance(details[i], dict) else {}
+                results.append({"translated_text": text, "tm_match": detail.get("tm_match")})
+        return results
+
     # -- Languages ----------------------------------------------------------
 
     async def get_languages(self) -> dict[str, Any]:

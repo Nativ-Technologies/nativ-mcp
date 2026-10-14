@@ -95,6 +95,26 @@ Run instance. The stdio transport continues to read/write local files.
 
 ## Deployment
 
+Deploy the backend with support for `origin=mcp_batch_translation` before
+deploying the MCP batch update. `translate_batch` now submits texts together
+in groups of up to 32 segments within the API's 50,000-character text limit,
+instead of issuing a separate translation request for every segment. The MCP
+batch path uses the account's selected model, TM, and style guides. Existing
+tool arguments and successful response formatting are preserved.
+
+Backend MCP batches have a 180-second processing deadline, and the MCP tool
+has a 240-second overall deadline. Incomplete results and timeouts are MCP
+tool errors (HTTP 502 through the JSON adapter); they are not successful
+translation strings. There are no automatic batch retries. For multi-chunk
+inputs, earlier completed chunks may already have been billed when a later
+chunk fails. Check usage before repeating a failed request.
+
+To investigate latency, compare identical inputs, tool arguments, API key,
+and backend URL. Logs include `mcp_batch_start` / `mcp_batch_complete`,
+`mcp_translation_tm`, and `translation_model` elapsed times without source
+text or credentials. Check Cloud Run CPU, memory, and request concurrency
+alongside these timings before increasing instance size.
+
 ```bash
 uv sync --extra hosted
 uv run python -m unittest discover -s tests
