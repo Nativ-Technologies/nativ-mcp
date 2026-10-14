@@ -101,9 +101,8 @@ in groups of up to 32 segments within the API's 50,000-character text limit,
 instead of issuing a separate translation request for every segment. The MCP
 batch path uses the account's selected model, TM, and style guides. Existing
 tool arguments and successful response formatting are preserved.
-For regular Gemini 3.1 Pro, MCP batches request low reasoning to reduce
-latency. Explicit Deep Think selections retain high reasoning; frontend and
-legacy batch calls retain their existing provider settings.
+MCP uses the account's model and provider reasoning defaults. There are no
+MCP-specific reasoning overrides.
 
 Backend MCP batches have a 180-second processing deadline, and the MCP tool
 has a 240-second overall deadline. Incomplete results and timeouts are MCP
