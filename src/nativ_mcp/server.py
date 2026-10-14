@@ -63,7 +63,10 @@ mcp = MCPServer(
         "translate text, search translation memory, manage TM entries, access "
         "style guides, localize images, transcribe and dub audio/video, and "
         "localize subtitles. Always use the user's configured languages and "
-        "respect their brand voice and style settings."
+        "respect their brand voice and style settings. Translate related text, "
+        "subtitle cues, and voiceover segments together with translate_batch "
+        "instead of separate translate calls. Surface translation errors before "
+        "synthesizing audio or assembling video."
     ),
 )
 
@@ -145,7 +148,8 @@ async def translate_batch(
 ) -> str:
     """Translate multiple texts to a single target language.
 
-    Useful for localizing lists of strings, UI labels, or i18n files.
+    Use for lists of strings, UI labels, i18n files, subtitle cues, and
+    voiceover segments. Prefer one batch over separate translate calls.
     Texts are translated together using the team's TM and style guides.
     A failed or incomplete batch is a tool error; do not synthesize its output.
 
