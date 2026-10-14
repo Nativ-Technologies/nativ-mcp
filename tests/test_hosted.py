@@ -61,9 +61,14 @@ class HostedTests(unittest.IsolatedAsyncioTestCase):
             "MCP-Protocol-Version": "2025-11-25",
             "Authorization" if bearer else "X-API-Key": f"Bearer {key}" if bearer else key,
         }
-        return await self.http.post("/mcp", headers=headers, json={
+        response = await self.http.post("/mcp", headers=headers, json={
             "jsonrpc": "2.0", "id": 1, "method": method, "params": params or {},
         })
+        if response.headers.get("content-type", "").startswith("text/event-stream"):
+            messages = [json.loads(line[6:]) for line in response.text.splitlines() if line.startswith("data: ")]
+            result = next(message for message in messages if message.get("id") == 1)
+            return httpx.Response(response.status_code, json=result, request=response.request)
+        return response
 
     async def test_health_and_auth_fail_closed(self):
         self.assertEqual((await self.http.get("/health")).status_code, 200)

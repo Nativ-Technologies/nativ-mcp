@@ -97,7 +97,10 @@ def create_app(*, artifact_store: Any = None, api_transport: httpx.AsyncBaseTran
     hosts += [h.strip() for h in os.getenv("NATIV_MCP_ALLOWED_HOSTS", "").split(",") if h.strip()]
     origins = [o.strip() for o in os.getenv("NATIV_MCP_ALLOWED_ORIGINS", "").split(",") if o.strip()]
     security = TransportSecuritySettings(allowed_hosts=hosts, allowed_origins=origins)
-    app = mcp.streamable_http_app(json_response=True, stateless_http=True, transport_security=security)
+    # SSE delivers progress on the active POST while a tool is running.
+    # Stateless requests still work across replicas; the JSON tool adapter
+    # remains application/json for connectors without MCP streaming support.
+    app = mcp.streamable_http_app(json_response=False, stateless_http=True, transport_security=security)
     api_client = httpx.AsyncClient(
         base_url=os.getenv("NATIV_API_URL", DEFAULT_API_URL), timeout=15, follow_redirects=False,
         transport=api_transport,

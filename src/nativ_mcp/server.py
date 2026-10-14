@@ -23,6 +23,7 @@ from nativ_mcp.client import NativClient
 from nativ_mcp.files import read_file as _read_local_file, read_image as _read_local_image
 from nativ_mcp.files import save_base64 as _save_base64_image, save_subtitle
 from nativ_mcp.runtime import hosted_request
+from nativ_mcp.progress import tool_progress
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 logger = logging.getLogger("nativ-mcp")
@@ -58,6 +59,7 @@ def _fmt_json(data: Any) -> str:
 
 mcp = MCPServer(
     "nativ",
+    middleware=[tool_progress],
     instructions=(
         "Nativ is an AI-powered localization platform. Use the available tools to "
         "translate text, search translation memory, manage TM entries, access "

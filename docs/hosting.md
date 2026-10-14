@@ -1,7 +1,11 @@
 # Hosted Nativ MCP
 
 The hosted service exposes the existing tools, resources, and prompts at `/mcp`
-over Streamable HTTP. It validates the caller's Nativ API key on every request
+over Streamable HTTP with SSE responses. Clients that request progress receive
+an update every 15 seconds while a tool is running. Updates count elapsed
+seconds without claiming a completion percentage. This keeps supporting
+clients' idle timers active without changing model reasoning or tool results.
+It validates the caller's Nativ API key on every request
 and forwards that caller's key to the REST API. It never uses `NATIV_API_KEY`
 from the server environment for hosted calls.
 
@@ -136,9 +140,10 @@ The script creates a dedicated `nativ-mcp` Cloud Run service and service account
 a private output bucket, and the account permissions needed to write outputs
 and sign URLs using IAM. It does not deploy the Nativ backend. Cloud Run accepts
 public traffic; application middleware authenticates MCP requests. `/health`
-and both OpenAPI schema routes are public. The service uses a stateless transport and JSON
-responses, so requests can go to any replica. Server-initiated sampling,
-elicitation, and streamed progress are not used by the current Nativ tools.
+and both OpenAPI schema routes are public. The service uses stateless requests,
+so requests can go to any replica. The JSON-only `/tools/*` adapter still
+returns application/json. Server-initiated sampling and elicitation are not
+used by the current Nativ tools.
 
 Set `MCP_PROJECT`, `MCP_REGION`, `MCP_SERVICE`, `MCP_BUCKET`, or `MCP_PUBLIC_URL`
 to override deployment defaults. `NATIV_MCP_ALLOWED_HOSTS` contains additional
