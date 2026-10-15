@@ -39,8 +39,8 @@ wire protocol. REST media operations use multipart uploads.
 ## JSON-only API connectors
 
 For clients that only support `application/json`, import
-`https://mcp.usenativ.com/json-openapi.json`. It describes 21 new HTTP endpoints,
-one per existing tool, under `/tools/{tool_name}`. These use the same `X-API-Key`
+`https://mcp.usenativ.com/json-openapi.json`. It describes 51 HTTP endpoints,
+one per tool, under `/tools/{tool_name}`. These use the same `X-API-Key`
 header and account permissions as hosted MCP.
 
 For example, transcribe an audio/video URL without uploading multipart data:
@@ -77,14 +77,16 @@ client's own image/video capabilities.
 
 The JSON adapter accepts a native array for `synthesize_audio.segments` as well.
 Existing MCP calls continue to use their original string arguments for
-`replacements` and `segments`. The original `/openapi.json` schema and backend
-REST endpoints are unchanged. JSON adapter bodies are limited to 1 MiB; media
+`replacements` and `segments`. The `/openapi.json` schema also documents existing
+REST operations used by the added tools. Backend REST endpoints are unchanged.
+JSON adapter bodies are limited to 1 MiB; media
 uses HTTPS URLs rather than embedded base64.
 
 ## Media
 
 Hosted tools take a public HTTPS URL in their existing `file_path`, `image_path`,
-`audio_path`, `video_path`, `subtitle_path`, or `glossary_path` argument. Presigned
+`audio_path`, `video_path`, `subtitle_path`, `glossary_path`, `reference_path`, or
+`consent_path` argument. Presigned
 S3/GCS HTTPS URLs work while valid. `s3://`, `gs://`, HTTP, local paths, private
 networks, and metadata endpoints are rejected. Downloads are limited to 100 MiB,
 120 seconds, and five redirects; every hop is checked and pinned to a public IP.
@@ -96,6 +98,44 @@ The bucket lifecycle deletes objects after one day (Cloud Storage processes
 lifecycle deletion asynchronously). URLs are bearer capabilities; share them
 only with intended recipients. No generated files depend on a particular Cloud
 Run instance. The stdio transport continues to read/write local files.
+
+## Complete localization workflows
+
+Version 0.5.0 adds 30 tools to the existing 21. All 51 tools register through the
+same server for stdio, hosted MCP, and the JSON adapter. No backend or frontend
+deployment is needed. Existing tool arguments and output schemas are unchanged.
+See [the coverage audit](capabilities.md) for workflow mappings and boundaries.
+
+`create_byo_voice` creates a saved ElevenLabs clone from original audio/video
+when `clip_reference=true`, with optional speech-only `clip_ranges`. It requires
+the user's ownership/permission confirmation. For Google cloning, supply a
+consent recording; `get_voice_consent_script` returns the required wording.
+`list_voices` includes the caller's saved clones, and the returned `voice_id`
+works with `preview_voice`, `synthesize_audio`, and `synthesize_audio_advanced`.
+There is no difference in voice-cloning tools between local and hosted MCP.
+
+For JSON-only clients, for example:
+
+```json
+{
+  "reference_path": "https://your-storage.example.com/original.mp4",
+  "confirm_ownership": true,
+  "clip_reference": true,
+  "name": "Campaign speaker",
+  "language_code": "hi",
+  "clip_ranges": [{"start_ms": 1000, "end_ms": 29000}]
+}
+```
+
+Send this to `POST /tools/create_byo_voice`. Native arrays and objects are used
+by all new tools. `storage_path` on saved-subtitle tools is an account-scoped
+storage key from `list_subtitles`, not a URL or local file path.
+
+Use `transcribe_audio_detailed` to retain complete timed segments and speaker
+IDs, `translate_dialogue` for shared-context speaker turns, and
+`synthesize_audio_advanced` to assign each speaker a saved voice. These tools
+use existing account models and provider reasoning defaults. They do not alter
+model configuration, duration limits, pricing, or provider verification rules.
 
 ## Deployment
 

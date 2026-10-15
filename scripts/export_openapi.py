@@ -19,7 +19,9 @@ def references(value):
 
 def export(source):
     root = Path(__file__).resolve().parents[1]
-    paths = set(re.findall(r'"(/[^"\s]+)"', (root / "src/nativ_mcp/client.py").read_text()))
+    paths = set()
+    for filename in ("client.py", "workflow_tools.py"):
+        paths.update(re.findall(r'"(/[^"\s]+)"', (root / "src/nativ_mcp" / filename).read_text()))
     selected = {}
     for path in sorted(paths):
         if path not in source["paths"]:
@@ -37,7 +39,7 @@ def export(source):
             pending.extend(references(schemas[name]))
     return {
         "openapi": source["openapi"],
-        "info": {"title": "Nativ Localization API", "version": "0.3.0", "description": "REST operations used by Nativ MCP. Media requests use multipart file uploads; responses may include base64 media."},
+        "info": {"title": "Nativ Localization API", "version": "0.5.0", "description": "REST operations used by Nativ MCP. Media requests use multipart file uploads; responses may include base64 media."},
         "servers": [{"url": "https://api.usenativ.com"}],
         "security": [{"NativAPIKey": []}],
         "paths": selected,

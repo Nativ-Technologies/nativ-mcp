@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Nativ Localization API",
-    "version": "0.3.0",
+    "version": "0.5.0",
     "description": "REST operations used by Nativ MCP. Media requests use multipart file uploads; responses may include base64 media."
   },
   "servers": [
@@ -16,6 +16,30 @@
     }
   ],
   "paths": {
+    "/audio/capabilities": {
+      "get": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Audio Capabilities",
+        "operationId": "audio_capabilities_audio_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
     "/audio/remux-video": {
       "post": {
         "tags": [
@@ -202,6 +226,52 @@
         ]
       }
     },
+    "/audio/translate-dialogue": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Translate Dialogue",
+        "operationId": "translate_dialogue_audio_translate_dialogue_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioDialogueTranslateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioDialogueTranslateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
     "/audio/video/register": {
       "post": {
         "tags": [
@@ -280,6 +350,98 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AudioVoicesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/audio/voices/byo": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Clone Byo Voice",
+        "operationId": "clone_byo_voice_audio_voices_byo_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_clone_byo_voice_audio_voices_byo_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioByoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/audio/voices/clone": {
+      "post": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Clone Voice",
+        "operationId": "clone_voice_audio_voices_clone_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_clone_voice_audio_voices_clone_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioCloneResponse"
                 }
               }
             }
@@ -381,6 +543,52 @@
                 "schema": {
                   "$ref": "#/components/schemas/AudioPreviewResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/audio/voices/saved": {
+      "delete": {
+        "tags": [
+          "audio"
+        ],
+        "summary": "Delete Saved Voice",
+        "operationId": "delete_saved_voice_audio_voices_saved_delete",
+        "parameters": [
+          {
+            "name": "voice_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Voice Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -761,6 +969,160 @@
         ]
       }
     },
+    "/master-tm/entries/{entry_id}": {
+      "patch": {
+        "tags": [
+          "master-tm"
+        ],
+        "summary": "Update Entry",
+        "description": "Update a TM entry (PATCH).",
+        "operationId": "update_entry_master_tm_entries__entry_id__patch",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TMEntryUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "master-tm"
+        ],
+        "summary": "Update Entry Put",
+        "description": "Update a TM entry (PUT). Only updates master_tm table.\nUpstream sources (GCS CSVs, Phrase) remain as source of truth.",
+        "operationId": "update_entry_put_master_tm_entries__entry_id__put",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TMEntryUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "master-tm"
+        ],
+        "summary": "Delete Entry",
+        "description": "Delete a TM entry.",
+        "operationId": "delete_entry_master_tm_entries__entry_id__delete",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
     "/master-tm/fuzzy-search": {
       "get": {
         "tags": [
@@ -1023,6 +1385,501 @@
         ]
       }
     },
+    "/style-guide/reorder": {
+      "post": {
+        "tags": [
+          "style-guide"
+        ],
+        "summary": "Reorder Style Guides",
+        "description": "Reorder style guides by providing the list of guide IDs in the new order.",
+        "operationId": "reorder_style_guides_style_guide_reorder_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/style-guide/upload": {
+      "post": {
+        "tags": [
+          "style-guide"
+        ],
+        "summary": "Create Style Guide From File",
+        "description": "Create a style guide from an uploaded file.\nSupports: .txt, .docx",
+        "operationId": "create_style_guide_from_file_style_guide_upload_post",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Title"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_style_guide_from_file_style_guide_upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StyleGuide"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/style-guide/{guide_id}": {
+      "put": {
+        "tags": [
+          "style-guide"
+        ],
+        "summary": "Update Style Guide",
+        "description": "Update a style guide entry.",
+        "operationId": "update_style_guide_style_guide__guide_id__put",
+        "parameters": [
+          {
+            "name": "guide_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Guide Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StyleGuideUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StyleGuide"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "style-guide"
+        ],
+        "summary": "Delete Style Guide",
+        "description": "Delete a style guide entry.",
+        "operationId": "delete_style_guide_style_guide__guide_id__delete",
+        "parameters": [
+          {
+            "name": "guide_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Guide Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StyleGuideDeleteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/subtitle/delete": {
+      "delete": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "Delete Itt File",
+        "description": "Delete an ITT file from storage\n\n- **file_path**: Path to the ITT file in storage\n\nThis action cannot be undone.",
+        "operationId": "delete_itt_file_subtitle_delete_delete",
+        "parameters": [
+          {
+            "name": "file_path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Path to the ITT file to delete",
+              "title": "File Path"
+            },
+            "description": "Path to the ITT file to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/subtitle/download-formatted": {
+      "get": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "Download Subtitle Formatted",
+        "description": "Download the formatted subtitle file.\n\nIf regenerate=true AND a QC Excel file exists, the subtitle will be regenerated from \nthe latest QC Excel data (useful after QC edits have been made).\n\nIf regenerate=false OR no QC file exists, returns a redirect to a signed URL\nfor fast direct download from GCS.\n\nArgs:\n    file_path: Full path to the localized subtitle file\n    regenerate: Whether to regenerate from QC data first\n    source_language: Source language code for regeneration\n    \nReturns:\n    RedirectResponse to signed URL (fast path) or StreamingResponse (regeneration path)",
+        "operationId": "download_subtitle_formatted_subtitle_download_formatted_get",
+        "parameters": [
+          {
+            "name": "file_path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Full path to the localized subtitle file in GCS",
+              "title": "File Path"
+            },
+            "description": "Full path to the localized subtitle file in GCS"
+          },
+          {
+            "name": "regenerate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Whether to regenerate subtitle from latest QC data",
+              "default": false,
+              "title": "Regenerate"
+            },
+            "description": "Whether to regenerate subtitle from latest QC data"
+          },
+          {
+            "name": "source_language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Source language code",
+              "default": "en",
+              "title": "Source Language"
+            },
+            "description": "Source language code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/subtitle/download-url": {
+      "get": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "Get Itt Download Url",
+        "description": "Get a signed download URL for an ITT file\n\n- **file_path**: Path to the ITT file in storage\n\nReturns a temporary signed URL that expires in 1 hour.",
+        "operationId": "get_itt_download_url_subtitle_download_url_get",
+        "parameters": [
+          {
+            "name": "file_path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Path to the ITT file",
+              "title": "File Path"
+            },
+            "description": "Path to the ITT file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/subtitle/list": {
+      "get": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "List Subtitle Files",
+        "description": "List all ITT files for the current user, organized by language folders\n\nReturns files grouped by language with metadata including:\n- Original and localized files\n- File sizes and upload dates\n- Language-specific folders",
+        "operationId": "list_subtitle_files_subtitle_list_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubtitleListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/subtitle/localize": {
+      "post": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "Localize Existing Itt File",
+        "description": "Localize an existing ITT file to multiple target languages\n\n- **file_path**: Path to the source ITT file in storage\n- **target_languages**: List of target language codes (e.g., ['es', 'fr', 'de'])\n- **context**: Additional context to help with translation accuracy\n- **glossary**: Custom glossary terms for consistent translation\n\nThis endpoint allows you to localize files that were previously uploaded without auto-localization.",
+        "operationId": "localize_existing_itt_file_subtitle_localize_post",
+        "parameters": [
+          {
+            "name": "file_path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Path to the source ITT file",
+              "title": "File Path"
+            },
+            "description": "Path to the source ITT file"
+          },
+          {
+            "name": "target_languages",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Target language codes",
+              "title": "Target Languages"
+            },
+            "description": "Target language codes"
+          },
+          {
+            "name": "context",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Additional context for translation",
+              "default": "",
+              "title": "Context"
+            },
+            "description": "Additional context for translation"
+          },
+          {
+            "name": "glossary",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Custom glossary for translation",
+              "default": "",
+              "title": "Glossary"
+            },
+            "description": "Custom glossary for translation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
     "/subtitle/parse": {
       "post": {
         "tags": [
@@ -1116,13 +1973,299 @@
         ]
       }
     },
+    "/subtitle/qc/download": {
+      "get": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "Download Subtitle Qc Excel",
+        "description": "Download the QC Excel file for a localized subtitle file.\n\nArgs:\n    file_path: Full path to the localized subtitle file\n    \nReturns:\n    StreamingResponse: The QC Excel file",
+        "operationId": "download_subtitle_qc_excel_subtitle_qc_download_get",
+        "parameters": [
+          {
+            "name": "file_path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Full path to the localized subtitle file in GCS",
+              "title": "File Path"
+            },
+            "description": "Full path to the localized subtitle file in GCS"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/subtitle/qc/preview": {
+      "get": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "Get Subtitle Qc Preview",
+        "description": "Get preview data for a subtitle's QC Excel file.\n\nThis returns the QC Excel data (Source, Translation, Approved, Backtranslation,\nTM Match %, TM Reference, Rationale) for display in the review dialog.\n\nArgs:\n    file_path: Full path to the localized subtitle file (e.g., \"[USER_ID]/fr/video_fr.srt\")\n    \nReturns:\n    {\n      \"success\": true,\n      \"preview\": {\n        \"filename\": \"video_fr_qc.xlsx\",\n        \"subtitle_file\": \"[USER_ID]/fr/video_fr.srt\",\n        \"sheets\": [{...}],\n        \"approval_stats\": {\"approved\": 5, \"total\": 10}\n      }\n    }",
+        "operationId": "get_subtitle_qc_preview_subtitle_qc_preview_get",
+        "parameters": [
+          {
+            "name": "file_path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Full path to the localized subtitle file in GCS",
+              "title": "File Path"
+            },
+            "description": "Full path to the localized subtitle file in GCS"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/subtitle/qc/update-translations": {
+      "post": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "Update Subtitle Qc Translations",
+        "description": "Update translations in a subtitle's QC Excel file.\n\nArgs:\n    request.file_path: Full path to the localized subtitle file\n    request.updates: List of {row_index, translation, approved, rationale}\n    \nReturns:\n    {\n      \"success\": true,\n      \"message\": \"Updates saved successfully\",\n      \"approval_stats\": {\"approved\": 5, \"total\": 10}\n    }",
+        "operationId": "update_subtitle_qc_translations_subtitle_qc_update_translations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubtitleQCUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/subtitle/upload": {
+      "post": {
+        "tags": [
+          "Subtitle Files"
+        ],
+        "summary": "Upload Subtitle File",
+        "description": "Upload a subtitle file (ITT or SRT) with optional auto-localization\n\n- **file**: Subtitle file to upload (.itt or .srt extension)\n- **auto_localize**: Whether to automatically localize the file\n- **target_languages**: List of target language codes (e.g., ['es', 'fr', 'de'])\n- **context**: Additional context to help with translation accuracy\n- **glossary**: Custom glossary terms for consistent translation\n- **source_language**: Source language code (default: 'en')\n\nSupports any language codes configured in your account.",
+        "operationId": "upload_subtitle_file_subtitle_upload_post",
+        "parameters": [
+          {
+            "name": "auto_localize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Automatically localize to target languages",
+              "default": false,
+              "title": "Auto Localize"
+            },
+            "description": "Automatically localize to target languages"
+          },
+          {
+            "name": "target_languages",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Target language codes for auto-localization",
+              "default": [],
+              "title": "Target Languages"
+            },
+            "description": "Target language codes for auto-localization"
+          },
+          {
+            "name": "context",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Additional context for translation",
+              "default": "",
+              "title": "Context"
+            },
+            "description": "Additional context for translation"
+          },
+          {
+            "name": "glossary",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Custom glossary for translation",
+              "default": "",
+              "title": "Glossary"
+            },
+            "description": "Custom glossary for translation"
+          },
+          {
+            "name": "source_language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Source language code",
+              "default": "en",
+              "title": "Source Language"
+            },
+            "description": "Source language code"
+          },
+          {
+            "name": "num_variants",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Number of translation variants per row (1, 2, or 3). When > 1, QC Excel will have multiple variant rows per source text for review.",
+              "default": 1,
+              "title": "Num Variants"
+            },
+            "description": "Number of translation variants per row (1, 2, or 3). When > 1, QC Excel will have multiple variant rows per source text for review."
+          },
+          {
+            "name": "campaign_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Campaign IDs to filter TM entries and style guides during localization",
+              "title": "Campaign Ids"
+            },
+            "description": "Campaign IDs to filter TM entries and style guides during localization"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_subtitle_file_subtitle_upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubtitleUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
     "/text/culturalize": {
       "post": {
         "tags": [
           "text"
         ],
         "summary": "Culturalize Text",
-        "description": "Intelligent translation with glossary priority and fixed cost of 100 credits.\n\nAccepts:\n  - text: the source text to translate\n  - language: target language full name (e.g. \"French\")\n  - language_code: optional target language code (e.g. \"FR\") - if not provided, will be empty\n  - source_language: source language name (default: \"English\")\n  - source_language_code: source language code (default: \"en\")\n  - glossary: optional glossary content for priority matching\n  - context: optional context to use for the translation\n  - image_base64: optional base64-encoded image (raw base64 or data URL) to provide visual context\n  - tool: the tool to use for the translation (e.g. \"psd-api\")\n  - formality: optional formality level (very_informal, informal, neutral, formal, very_formal) - if not provided, uses user's default settings\n  - include_tm_info: when true, returns TM match score, reference, and rationale\n  - backtranslate: when true (and include_tm_info=true), generates backtranslation and AI-powered rationale\n  \nReturns:\n  - { \n      \"translated_text\": \"<intelligent translation>\", \n      \"metadata\": {\n        \"word_count\": <number>,\n        \"cost\": 100\n      },\n      \"tm_match\": { ... } // only when include_tm_info=true\n      \"rationale\": \"...\" // only when include_tm_info=true (AI-powered when backtranslate=true)\n      \"backtranslation\": \"...\" // only when backtranslate=true\n    }",
+        "description": "Localize text; MCP batches use a bounded shared-context translation.",
         "operationId": "culturalize_text_text_culturalize_post",
         "requestBody": {
           "content": {
@@ -1218,6 +2361,123 @@
         ]
       }
     },
+    "/text/feedback": {
+      "get": {
+        "tags": [
+          "feedback"
+        ],
+        "summary": "Get User Feedback",
+        "description": "Get all feedback entries for the authenticated user.\n\n**Authentication Required**: Bearer token (JWT) or API key\n\n**Response**:\n- Returns list of all feedback entries with IDs for editing\n- Each entry includes: id, source_text, result, feedback, language, approved\n- Entries are ordered chronologically (oldest first)\n\n**Note**: This endpoint is for dashboard management of feedback entries.",
+        "operationId": "get_user_feedback_text_feedback_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "feedback"
+        ],
+        "summary": "Update User Feedback",
+        "description": "Update all feedback entries for the authenticated user.\n\n**Authentication Required**: Bearer token (JWT) or API key\n\n**Request Body**:\n- `entries`: List of feedback entries to save (replaces entire feedback file)\n- Each entry can include: source_text, result, feedback, language, approved\n- IDs are ignored (entries are saved in order provided)\n\n**Response**:\n- Returns success status and count of updated entries\n\n**Note**: This completely replaces the user's feedback CSV with the provided entries.\nUse this for bulk updates, adding/removing rows, and reordering entries.",
+        "operationId": "update_user_feedback_text_feedback_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackUpdateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "feedback"
+        ],
+        "summary": "Submit Feedback",
+        "description": "Submit user feedback about translation or other operations.\n\n**Authentication Required**: Bearer token (JWT) or API key\n\n**Request Body**:\n- `source`: Optional source text that was processed\n- `result`: Optional result text that was generated  \n- `language`: Optional language used in the operation\n- `feedback`: Optional user's feedback about the operation\n- `approved`: Optional boolean indicating if user approved the result (true=approved, false=not approved, null=no rating)\n\n**Response**:\n- Returns success status and feedback ID if saved successfully\n- All fields are optional to allow flexible feedback submission\n\n**Note**: This endpoint is designed to collect user feedback for improving\nthe service quality. Feedback will be reviewed by administrators.\n\n**Storage**: Feedback is stored both in the database and as CSV files in \nGoogle Cloud Storage with columns: source_text, result, feedback, language, approved",
+        "operationId": "submit_feedback_text_feedback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
     "/user/languages": {
       "get": {
         "tags": [
@@ -1244,6 +2504,143 @@
           }
         ]
       }
+    },
+    "/user/languages/formality-options": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Get Formality Options",
+        "description": "Return allowed formality options for frontend selects.",
+        "operationId": "get_formality_options_user_languages_formality_options_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/user/languages/{mapping_id}/custom-style": {
+      "patch": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Update Language Custom Style",
+        "description": "Update the custom style directives text for a specific user language mapping.",
+        "operationId": "update_language_custom_style_user_languages__mapping_id__custom_style_patch",
+        "parameters": [
+          {
+            "name": "mapping_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Mapping Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomStyleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
+    },
+    "/user/languages/{mapping_id}/formality": {
+      "patch": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Update Language Formality",
+        "description": "Update the formality for a specific user language mapping.",
+        "operationId": "update_language_formality_user_languages__mapping_id__formality_patch",
+        "parameters": [
+          {
+            "name": "mapping_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Mapping Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFormalityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "NativAPIKey": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -1255,6 +2652,100 @@
       }
     },
     "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "UpdateFormalityRequest": {
+        "properties": {
+          "formality": {
+            "type": "string",
+            "enum": [
+              "very_informal",
+              "informal",
+              "neutral",
+              "formal",
+              "very_formal"
+            ],
+            "title": "Formality",
+            "description": "Desired formality level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "formality"
+        ],
+        "title": "UpdateFormalityRequest",
+        "description": "Request model to update formality for a user language mapping."
+      },
+      "UpdateCustomStyleRequest": {
+        "properties": {
+          "custom_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Style",
+            "description": "Freeform per-language style directives to include in prompts"
+          }
+        },
+        "type": "object",
+        "title": "UpdateCustomStyleRequest",
+        "description": "Request model to update custom style directives for a user language mapping."
+      },
       "UserLanguagesResponse": {
         "properties": {
           "languages": {
@@ -1331,58 +2822,278 @@
         "title": "UserLanguage",
         "description": "Individual user language mapping."
       },
-      "HTTPValidationError": {
+      "FeedbackResponse": {
         "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "type": "array",
-            "title": "Detail"
-          }
-        },
-        "type": "object",
-        "title": "HTTPValidationError"
-      },
-      "ValidationError": {
-        "properties": {
-          "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
-            },
-            "type": "array",
-            "title": "Location"
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Whether the feedback was successfully saved"
           },
-          "msg": {
+          "message": {
             "type": "string",
-            "title": "Message"
+            "title": "Message",
+            "description": "Success or error message",
+            "example": "Feedback submitted successfully"
           },
-          "type": {
-            "type": "string",
-            "title": "Error Type"
-          },
-          "input": {
-            "title": "Input"
-          },
-          "ctx": {
-            "type": "object",
-            "title": "Context"
+          "feedback_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback Id",
+            "description": "ID of the created feedback record"
           }
         },
         "type": "object",
         "required": [
-          "loc",
-          "msg",
-          "type"
+          "success",
+          "message"
         ],
-        "title": "ValidationError"
+        "title": "FeedbackResponse",
+        "description": "Response model for feedback submission."
+      },
+      "FeedbackRequest": {
+        "properties": {
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "Source text that was processed",
+            "example": "Hello, world!"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result",
+            "description": "Result text that was generated",
+            "example": "Bonjour le monde!"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language",
+            "description": "Language used in the operation",
+            "example": "French"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback",
+            "description": "User's feedback about the operation",
+            "example": "The translation was accurate but could be more natural."
+          },
+          "approved": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved",
+            "description": "Whether the user approved/liked the result (true=approved, false=not approved, null=no rating)",
+            "example": true
+          }
+        },
+        "type": "object",
+        "title": "FeedbackRequest",
+        "description": "Request model for user feedback submission."
+      },
+      "FeedbackUpdateResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Whether the update was successful"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Success or error message"
+          },
+          "updated_count": {
+            "type": "integer",
+            "title": "Updated Count",
+            "description": "Number of entries updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "updated_count"
+        ],
+        "title": "FeedbackUpdateResponse",
+        "description": "Response model for feedback update."
+      },
+      "FeedbackUpdateRequest": {
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/FeedbackEntry"
+            },
+            "type": "array",
+            "title": "Entries",
+            "description": "List of feedback entries to save"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entries"
+        ],
+        "title": "FeedbackUpdateRequest",
+        "description": "Request model for updating feedback entries."
+      },
+      "FeedbackEntry": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id",
+            "description": "Entry ID (row number, starts from 1)"
+          },
+          "source_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Text",
+            "description": "Source text that was processed",
+            "example": "Hello, world!"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result",
+            "description": "Result text that was generated",
+            "example": "Bonjour le monde!"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language",
+            "description": "Language used in the operation",
+            "example": "French"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback",
+            "description": "User's feedback about the operation",
+            "example": "The translation was accurate but could be more natural."
+          },
+          "approved": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved",
+            "description": "Whether the user approved/liked the result (true=approved, false=not approved, null=no rating)",
+            "example": true
+          }
+        },
+        "type": "object",
+        "title": "FeedbackEntry",
+        "description": "Individual feedback entry model."
+      },
+      "FeedbackListResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success",
+            "description": "Whether the request was successful"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/FeedbackEntry"
+            },
+            "type": "array",
+            "title": "Entries",
+            "description": "List of feedback entries"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count",
+            "description": "Total number of feedback entries"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "entries",
+          "total_count"
+        ],
+        "title": "FeedbackListResponse",
+        "description": "Response model for feedback list."
       },
       "OCRSegmentsResponse": {
         "properties": {
@@ -2012,6 +3723,98 @@
         "title": "TranslationRequest",
         "description": "Request model for intelligent translation with glossary priority."
       },
+      "SubtitleUploadResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "file_path": {
+            "type": "string",
+            "title": "File Path"
+          },
+          "original_filename": {
+            "type": "string",
+            "title": "Original Filename"
+          },
+          "file_size": {
+            "type": "integer",
+            "title": "File Size"
+          },
+          "localized_files": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Localized Files"
+          },
+          "auto_localization": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Localization"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "file_path",
+          "original_filename",
+          "file_size"
+        ],
+        "title": "SubtitleUploadResponse",
+        "description": "Response model for subtitle file upload"
+      },
+      "Body_upload_subtitle_file_subtitle_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_subtitle_file_subtitle_upload_post"
+      },
+      "SubtitleQCUpdateRequest": {
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "title": "File Path"
+          },
+          "updates": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Updates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_path",
+          "updates"
+        ],
+        "title": "SubtitleQCUpdateRequest"
+      },
       "SubtitlePlaygroundResponse": {
         "properties": {
           "video_id": {
@@ -2293,9 +4096,54 @@
         ],
         "title": "Body_parse_subtitle_cues_subtitle_parse_post"
       },
-      "BrandPromptResponse": {
+      "SubtitleListResponse": {
         "properties": {
-          "prompt": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/SubtitleFileInfo"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          },
+          "folders": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Folders"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files",
+          "total_count",
+          "folders"
+        ],
+        "title": "SubtitleListResponse",
+        "description": "Response model for listing subtitle files"
+      },
+      "SubtitleFileInfo": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "file_path": {
+            "type": "string",
+            "title": "File Path"
+          },
+          "file_size": {
+            "type": "integer",
+            "title": "File Size"
+          },
+          "upload_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Upload Date"
+          },
+          "language": {
             "anyOf": [
               {
                 "type": "string"
@@ -2304,22 +4152,53 @@
                 "type": "null"
               }
             ],
-            "title": "Prompt"
+            "title": "Language"
           },
-          "exists": {
+          "is_localized": {
             "type": "boolean",
-            "title": "Exists",
+            "title": "Is Localized",
             "default": false
           },
-          "cached": {
-            "type": "boolean",
-            "title": "Cached",
-            "default": false
+          "original_file": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original File"
           }
         },
         "type": "object",
-        "title": "BrandPromptResponse",
-        "description": "Response model for fetching brand prompt from GCS."
+        "required": [
+          "filename",
+          "file_path",
+          "file_size",
+          "upload_date"
+        ],
+        "title": "SubtitleFileInfo",
+        "description": "Model for subtitle file information"
+      },
+      "StyleGuideDeleteResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "StyleGuideDeleteResponse",
+        "description": "Response model for deleting a style guide."
       },
       "StyleGuide": {
         "properties": {
@@ -2383,6 +4262,116 @@
         ],
         "title": "StyleGuide",
         "description": "Full style guide model with all fields."
+      },
+      "StyleGuideUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          },
+          "display_order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Order"
+          },
+          "is_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Enabled"
+          }
+        },
+        "type": "object",
+        "title": "StyleGuideUpdate",
+        "description": "Model for updating a style guide entry."
+      },
+      "Body_create_style_guide_from_file_style_guide_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_create_style_guide_from_file_style_guide_upload_post"
+      },
+      "ReorderRequest": {
+        "properties": {
+          "guide_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Guide Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "guide_ids"
+        ],
+        "title": "ReorderRequest",
+        "description": "Request model for reordering style guides."
+      },
+      "BrandPromptResponse": {
+        "properties": {
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists",
+            "default": false
+          },
+          "cached": {
+            "type": "boolean",
+            "title": "Cached",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "BrandPromptResponse",
+        "description": "Response model for fetching brand prompt from GCS."
       },
       "StyleGuideCreate": {
         "properties": {
@@ -2469,6 +4458,48 @@
         ],
         "title": "TMStatsResponse",
         "description": "Response model for TM statistics"
+      },
+      "TMEntryUpdate": {
+        "properties": {
+          "target_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Text"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          }
+        },
+        "type": "object",
+        "title": "TMEntryUpdate",
+        "description": "Request model for updating a TM entry"
       },
       "TMEntryResponse": {
         "properties": {
@@ -3249,6 +5280,177 @@
         ],
         "title": "AudioConsentScriptResponse"
       },
+      "AudioCloneResponse": {
+        "properties": {
+          "voice_id": {
+            "type": "string",
+            "title": "Voice Id"
+          },
+          "locale": {
+            "type": "string",
+            "title": "Locale"
+          },
+          "consent_script": {
+            "type": "string",
+            "title": "Consent Script"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "default": "gcp_chirp3_hd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "voice_id",
+          "locale",
+          "consent_script"
+        ],
+        "title": "AudioCloneResponse"
+      },
+      "Body_clone_voice_audio_voices_clone_post": {
+        "properties": {
+          "reference": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Reference"
+          },
+          "consent": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Consent"
+          },
+          "language_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reference",
+          "consent"
+        ],
+        "title": "Body_clone_voice_audio_voices_clone_post"
+      },
+      "AudioByoResponse": {
+        "properties": {
+          "voice_id": {
+            "type": "string",
+            "title": "Voice Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "locale": {
+            "type": "string",
+            "title": "Locale"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "default": "gcp_chirp3_hd"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "default": "byo"
+          },
+          "min_seconds": {
+            "type": "number",
+            "title": "Min Seconds",
+            "default": 4
+          },
+          "max_seconds": {
+            "type": "integer",
+            "title": "Max Seconds",
+            "default": 15
+          }
+        },
+        "type": "object",
+        "required": [
+          "voice_id",
+          "name",
+          "locale"
+        ],
+        "title": "AudioByoResponse"
+      },
+      "Body_clone_byo_voice_audio_voices_byo_post": {
+        "properties": {
+          "reference": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Reference"
+          },
+          "consent": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "language_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language Code"
+          },
+          "confirm_ownership": {
+            "type": "string",
+            "title": "Confirm Ownership",
+            "default": "false"
+          },
+          "clip_reference": {
+            "type": "string",
+            "title": "Clip Reference",
+            "default": "false"
+          },
+          "clip_ranges": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clip Ranges"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reference"
+        ],
+        "title": "Body_clone_byo_voice_audio_voices_byo_post"
+      },
       "AudioVoicesResponse": {
         "properties": {
           "voices": {
@@ -3344,6 +5546,203 @@
           "file"
         ],
         "title": "Body_register_source_video_audio_video_register_post"
+      },
+      "AudioDialogueTranslateResponse": {
+        "properties": {
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/AudioDialogueTranslatedTurn"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "translation_runs": {
+            "type": "integer",
+            "title": "Translation Runs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segments",
+          "translation_runs"
+        ],
+        "title": "AudioDialogueTranslateResponse"
+      },
+      "AudioDialogueTranslatedTurn": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "start_ms": {
+            "type": "integer",
+            "title": "Start Ms",
+            "default": 0
+          },
+          "end_ms": {
+            "type": "integer",
+            "title": "End Ms",
+            "default": 0
+          },
+          "speaker_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaker Id"
+          },
+          "target_language": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Target Language"
+          },
+          "target_language_code": {
+            "type": "string",
+            "maxLength": 10,
+            "minLength": 2,
+            "title": "Target Language Code"
+          },
+          "translated_text": {
+            "type": "string",
+            "title": "Translated Text"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LocalizationSegmentDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "target_language",
+          "target_language_code",
+          "translated_text"
+        ],
+        "title": "AudioDialogueTranslatedTurn"
+      },
+      "AudioDialogueTranslateRequest": {
+        "properties": {
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/AudioDialogueTranslationTurn"
+            },
+            "type": "array",
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Segments"
+          },
+          "translation": {
+            "$ref": "#/components/schemas/TranslationRequest"
+          },
+          "speakers": {
+            "items": {
+              "$ref": "#/components/schemas/AudioSpeakerProfile"
+            },
+            "type": "array",
+            "title": "Speakers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "segments",
+          "translation"
+        ],
+        "title": "AudioDialogueTranslateRequest"
+      },
+      "AudioSpeakerProfile": {
+        "properties": {
+          "speaker_id": {
+            "type": "string",
+            "title": "Speaker Id"
+          },
+          "speech_ms": {
+            "type": "integer",
+            "title": "Speech Ms"
+          },
+          "gender": {
+            "type": "string",
+            "title": "Gender",
+            "default": "unknown"
+          },
+          "clone_eligible": {
+            "type": "boolean",
+            "title": "Clone Eligible",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "speaker_id",
+          "speech_ms"
+        ],
+        "title": "AudioSpeakerProfile"
+      },
+      "AudioDialogueTranslationTurn": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "start_ms": {
+            "type": "integer",
+            "title": "Start Ms",
+            "default": 0
+          },
+          "end_ms": {
+            "type": "integer",
+            "title": "End Ms",
+            "default": 0
+          },
+          "speaker_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaker Id"
+          },
+          "target_language": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Target Language"
+          },
+          "target_language_code": {
+            "type": "string",
+            "maxLength": 10,
+            "minLength": 2,
+            "title": "Target Language Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "target_language",
+          "target_language_code"
+        ],
+        "title": "AudioDialogueTranslationTurn"
       },
       "AudioTranscribeResponse": {
         "properties": {
@@ -3454,34 +5853,6 @@
           "billed_seconds"
         ],
         "title": "AudioTranscribeResponse"
-      },
-      "AudioSpeakerProfile": {
-        "properties": {
-          "speaker_id": {
-            "type": "string",
-            "title": "Speaker Id"
-          },
-          "speech_ms": {
-            "type": "integer",
-            "title": "Speech Ms"
-          },
-          "gender": {
-            "type": "string",
-            "title": "Gender",
-            "default": "unknown"
-          },
-          "clone_eligible": {
-            "type": "boolean",
-            "title": "Clone Eligible",
-            "default": false
-          }
-        },
-        "type": "object",
-        "required": [
-          "speaker_id",
-          "speech_ms"
-        ],
-        "title": "AudioSpeakerProfile"
       },
       "SpeechEnergyIsland": {
         "properties": {

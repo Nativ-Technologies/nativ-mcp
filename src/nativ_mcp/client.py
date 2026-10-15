@@ -56,6 +56,7 @@ class NativClient:
         *,
         files: Any,
         data: Any | None = None,
+        params: dict | None = None,
     ) -> dict[str, Any]:
         # Image generation can take a while, so use a generous timeout.
         async with httpx.AsyncClient(timeout=300.0) as client:
@@ -64,11 +65,37 @@ class NativClient:
                 headers=self.multipart_headers,
                 files=files,
                 data=data,
+                params=params,
             )
             if resp.status_code == 402:
                 raise RuntimeError("Insufficient Nativ credits. Top up at https://dashboard.usenativ.com")
             resp.raise_for_status()
             return resp.json()
+
+    async def download_subtitle_export(
+        self, storage_path: str, *, qc: bool = False, regenerate: bool = False,
+        source_language: str = "en",
+    ) -> tuple[bytes, str]:
+        """Fetch an authenticated export without forwarding keys to redirects."""
+        from nativ_mcp.files import download_media
+
+        path = "/subtitle/qc/download" if qc else "/subtitle/download-formatted"
+        params = {"file_path": storage_path}
+        if not qc:
+            params.update(regenerate=regenerate, source_language=source_language)
+        async with httpx.AsyncClient(timeout=300, follow_redirects=False) as client:
+            response = await client.get(
+                f"{self.base_url}{path}", headers=self.multipart_headers, params=params,
+            )
+            if response.is_redirect:
+                # The existing bounded downloader validates HTTPS, public IPs,
+                # redirects, and never receives Nativ authorization headers.
+                data, _, mime = await download_media(response.headers.get("location", ""), 100 * 1024 * 1024)
+                return data, mime
+            response.raise_for_status()
+            if len(response.content) > 100 * 1024 * 1024:
+                raise RuntimeError("Subtitle export exceeds the 100 MiB limit.")
+            return response.content, response.headers.get("content-type", "application/octet-stream").split(";")[0]
 
     # -- Translation --------------------------------------------------------
 

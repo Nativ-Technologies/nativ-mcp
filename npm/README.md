@@ -143,6 +143,43 @@ Ask your AI assistant things like:
 | `parse_subtitle` | Parse a local SRT/ITT into timed cues |
 | `localize_subtitles` | Localize subtitles in-memory from SRT/ITT and/or video STT |
 
+| `clone_voice` | Create a Google voice clone from reference speech and spoken consent |
+| `create_byo_voice` | Create and save an original-speaker clone from audio/video, or a Google clone with consent |
+| `delete_saved_voice` | Delete a saved cloned voice when requested |
+| `get_audio_capabilities` | Read account media duration limits and long-form eligibility |
+| `transcribe_audio_detailed` | Return complete transcript segments, speaker IDs, timings and media IDs |
+| `translate_dialogue` | Translate related speaker turns together, with timing and review details |
+| `synthesize_audio_advanced` | Dub with speaker-specific voices, music, timing and complete review data |
+| `upload_subtitle` | Save an SRT/ITT source, with optional auto-localization |
+| `list_subtitles` | List saved subtitle sources and localized files |
+| `localize_subtitle_file` | Localize an already saved ITT source |
+| `get_subtitle_download_url` | Get an expiring download URL for a saved subtitle |
+| `delete_subtitle` | Delete a saved subtitle when requested |
+| `get_subtitle_review` | Read subtitle QC rows and approval status |
+| `update_subtitle_review` | Save reviewed subtitle translations and approvals |
+| `export_subtitle` | Export subtitles with review edits, or a QC workbook |
+| `list_translation_memory_entries` | List and paginate TM entries with IDs |
+| `update_translation_memory_entry` | Edit or enable/disable an existing TM entry |
+| `delete_translation_memory_entry` | Delete a TM entry when requested |
+| `list_language_settings` | Get complete language settings with IDs for updates |
+| `get_language_formality_options` | List supported formality settings |
+| `update_language_formality` | Save a workspace language's formality |
+| `update_language_custom_style` | Save or clear per-language style instructions |
+| `list_style_guides` | Get complete style-guide content and IDs for editing |
+| `get_combined_prompt` | Read the combined brand prompt and enabled style guides |
+| `create_style_guide` | Create a workspace style guide |
+| `update_style_guide` | Edit or enable/disable an existing style guide |
+| `delete_style_guide` | Delete a style guide when requested |
+| `upload_style_guide` | Import a style guide from .txt or .docx |
+| `reorder_style_guides` | Save the order of style guides |
+| `submit_translation_feedback` | Save feedback or an approval rating |
+
+All 51 tools are shared by local and hosted MCP. Existing tools retain their
+arguments and results. Voice cloning uses the existing API and requires the
+user’s ownership/permission confirmation. See the
+[workflow coverage audit](https://github.com/Nativ-Technologies/nativ-mcp/blob/main/docs/capabilities.md)
+for original-voice dubbing and saved-subtitle examples.
+
 ## Resources
 
 | URI | Description |
