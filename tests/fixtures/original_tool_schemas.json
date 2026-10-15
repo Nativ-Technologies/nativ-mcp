@@ -1,0 +1,827 @@
+{
+  "translate": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "target_language": {
+          "title": "Target Language",
+          "type": "string"
+        },
+        "target_language_code": {
+          "default": "",
+          "title": "Target Language Code",
+          "type": "string"
+        },
+        "source_language": {
+          "default": "English",
+          "title": "Source Language",
+          "type": "string"
+        },
+        "source_language_code": {
+          "default": "en",
+          "title": "Source Language Code",
+          "type": "string"
+        },
+        "context": {
+          "default": "",
+          "title": "Context",
+          "type": "string"
+        },
+        "glossary": {
+          "default": "",
+          "title": "Glossary",
+          "type": "string"
+        },
+        "formality": {
+          "default": "",
+          "title": "Formality",
+          "type": "string"
+        },
+        "max_characters": {
+          "default": 0,
+          "title": "Max Characters",
+          "type": "integer"
+        },
+        "backtranslate": {
+          "default": false,
+          "title": "Backtranslate",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "text",
+        "target_language"
+      ],
+      "title": "translateArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "translateOutput",
+      "type": "object"
+    }
+  },
+  "translate_batch": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "texts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Texts",
+          "type": "array"
+        },
+        "target_language": {
+          "title": "Target Language",
+          "type": "string"
+        },
+        "target_language_code": {
+          "default": "",
+          "title": "Target Language Code",
+          "type": "string"
+        },
+        "source_language": {
+          "default": "English",
+          "title": "Source Language",
+          "type": "string"
+        },
+        "source_language_code": {
+          "default": "en",
+          "title": "Source Language Code",
+          "type": "string"
+        },
+        "context": {
+          "default": "",
+          "title": "Context",
+          "type": "string"
+        },
+        "formality": {
+          "default": "",
+          "title": "Formality",
+          "type": "string"
+        }
+      },
+      "required": [
+        "texts",
+        "target_language"
+      ],
+      "title": "translate_batchArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "translate_batchOutput",
+      "type": "object"
+    }
+  },
+  "search_translation_memory": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "title": "Query",
+          "type": "string"
+        },
+        "source_language_code": {
+          "default": "en",
+          "title": "Source Language Code",
+          "type": "string"
+        },
+        "target_language_code": {
+          "default": "",
+          "title": "Target Language Code",
+          "type": "string"
+        },
+        "min_score": {
+          "default": 0.0,
+          "title": "Min Score",
+          "type": "number"
+        },
+        "limit": {
+          "default": 10,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "title": "search_translation_memoryArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "search_translation_memoryOutput",
+      "type": "object"
+    }
+  },
+  "add_translation_memory_entry": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "source_text": {
+          "title": "Source Text",
+          "type": "string"
+        },
+        "target_text": {
+          "title": "Target Text",
+          "type": "string"
+        },
+        "source_language_code": {
+          "title": "Source Language Code",
+          "type": "string"
+        },
+        "target_language_code": {
+          "title": "Target Language Code",
+          "type": "string"
+        },
+        "name": {
+          "default": "",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_text",
+        "target_text",
+        "source_language_code",
+        "target_language_code"
+      ],
+      "title": "add_translation_memory_entryArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "add_translation_memory_entryOutput",
+      "type": "object"
+    }
+  },
+  "get_languages": {
+    "input_schema": {
+      "type": "object",
+      "properties": {},
+      "title": "get_languagesArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_languagesOutput",
+      "type": "object"
+    }
+  },
+  "get_translation_memory_stats": {
+    "input_schema": {
+      "type": "object",
+      "properties": {},
+      "title": "get_translation_memory_statsArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_translation_memory_statsOutput",
+      "type": "object"
+    }
+  },
+  "get_style_guides": {
+    "input_schema": {
+      "type": "object",
+      "properties": {},
+      "title": "get_style_guidesArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_style_guidesOutput",
+      "type": "object"
+    }
+  },
+  "get_brand_voice": {
+    "input_schema": {
+      "type": "object",
+      "properties": {},
+      "title": "get_brand_voiceArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_brand_voiceOutput",
+      "type": "object"
+    }
+  },
+  "extract_image_text": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "image_path": {
+          "title": "Image Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image_path"
+      ],
+      "title": "extract_image_textArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "extract_image_textOutput",
+      "type": "object"
+    }
+  },
+  "localize_image": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "image_path": {
+          "title": "Image Path",
+          "type": "string"
+        },
+        "replacements": {
+          "title": "Replacements",
+          "type": "string"
+        },
+        "target_language_code": {
+          "title": "Target Language Code",
+          "type": "string"
+        },
+        "output_path": {
+          "default": "",
+          "title": "Output Path",
+          "type": "string"
+        },
+        "num_images": {
+          "default": 1,
+          "title": "Num Images",
+          "type": "integer"
+        },
+        "output_format": {
+          "default": "png",
+          "title": "Output Format",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image_path",
+        "replacements",
+        "target_language_code"
+      ],
+      "title": "localize_imageArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "localize_imageOutput",
+      "type": "object"
+    }
+  },
+  "check_image_cultural_fit": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "image_path": {
+          "title": "Image Path",
+          "type": "string"
+        },
+        "countries": {
+          "default": "",
+          "title": "Countries",
+          "type": "string"
+        }
+      },
+      "required": [
+        "image_path"
+      ],
+      "title": "check_image_cultural_fitArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "check_image_cultural_fitOutput",
+      "type": "object"
+    }
+  },
+  "transcribe_audio": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "title": "File Path",
+          "type": "string"
+        },
+        "source_language_code": {
+          "default": "",
+          "title": "Source Language Code",
+          "type": "string"
+        },
+        "keep_background_music": {
+          "default": false,
+          "title": "Keep Background Music",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "file_path"
+      ],
+      "title": "transcribe_audioArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "transcribe_audioOutput",
+      "type": "object"
+    }
+  },
+  "parse_audio_script": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "title": "File Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_path"
+      ],
+      "title": "parse_audio_scriptArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "parse_audio_scriptOutput",
+      "type": "object"
+    }
+  },
+  "list_voices": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "language_code": {
+          "default": "",
+          "title": "Language Code",
+          "type": "string"
+        }
+      },
+      "title": "list_voicesArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "list_voicesOutput",
+      "type": "object"
+    }
+  },
+  "preview_voice": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "voice_id": {
+          "title": "Voice Id",
+          "type": "string"
+        },
+        "output_path": {
+          "default": "preview.wav",
+          "title": "Output Path",
+          "type": "string"
+        },
+        "language_code": {
+          "default": "",
+          "title": "Language Code",
+          "type": "string"
+        },
+        "text": {
+          "default": "",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "voice_id"
+      ],
+      "title": "preview_voiceArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "preview_voiceOutput",
+      "type": "object"
+    }
+  },
+  "get_voice_consent_script": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "language_code": {
+          "default": "",
+          "title": "Language Code",
+          "type": "string"
+        }
+      },
+      "title": "get_voice_consent_scriptArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "get_voice_consent_scriptOutput",
+      "type": "object"
+    }
+  },
+  "synthesize_audio": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "title": "Language",
+          "type": "string"
+        },
+        "language_code": {
+          "title": "Language Code",
+          "type": "string"
+        },
+        "voice_id": {
+          "title": "Voice Id",
+          "type": "string"
+        },
+        "segments": {
+          "title": "Segments",
+          "type": "string"
+        },
+        "output_path": {
+          "default": "dubbed.wav",
+          "title": "Output Path",
+          "type": "string"
+        },
+        "keep_same_length": {
+          "default": false,
+          "title": "Keep Same Length",
+          "type": "boolean"
+        },
+        "keep_background_music": {
+          "default": false,
+          "title": "Keep Background Music",
+          "type": "boolean"
+        },
+        "stem_id": {
+          "default": "",
+          "title": "Stem Id",
+          "type": "string"
+        },
+        "source_duration_ms": {
+          "default": 0,
+          "title": "Source Duration Ms",
+          "type": "integer"
+        },
+        "source_transcript": {
+          "default": "",
+          "title": "Source Transcript",
+          "type": "string"
+        },
+        "video_id": {
+          "default": "",
+          "title": "Video Id",
+          "type": "string"
+        },
+        "video_output_path": {
+          "default": "",
+          "title": "Video Output Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "language",
+        "language_code",
+        "voice_id",
+        "segments"
+      ],
+      "title": "synthesize_audioArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "synthesize_audioOutput",
+      "type": "object"
+    }
+  },
+  "register_video": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "title": "File Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_path"
+      ],
+      "title": "register_videoArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "register_videoOutput",
+      "type": "object"
+    }
+  },
+  "remux_video": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "video_id": {
+          "title": "Video Id",
+          "type": "string"
+        },
+        "audio_path": {
+          "title": "Audio Path",
+          "type": "string"
+        },
+        "output_path": {
+          "default": "dubbed.mp4",
+          "title": "Output Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "video_id",
+        "audio_path"
+      ],
+      "title": "remux_videoArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "remux_videoOutput",
+      "type": "object"
+    }
+  },
+  "parse_subtitle": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "title": "File Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_path"
+      ],
+      "title": "parse_subtitleArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "parse_subtitleOutput",
+      "type": "object"
+    }
+  },
+  "localize_subtitles": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "target_language_codes": {
+          "title": "Target Language Codes",
+          "type": "string"
+        },
+        "subtitle_path": {
+          "default": "",
+          "title": "Subtitle Path",
+          "type": "string"
+        },
+        "video_path": {
+          "default": "",
+          "title": "Video Path",
+          "type": "string"
+        },
+        "glossary_path": {
+          "default": "",
+          "title": "Glossary Path",
+          "type": "string"
+        },
+        "source_language_code": {
+          "default": "en",
+          "title": "Source Language Code",
+          "type": "string"
+        },
+        "context": {
+          "default": "",
+          "title": "Context",
+          "type": "string"
+        },
+        "formality": {
+          "default": "",
+          "title": "Formality",
+          "type": "string"
+        },
+        "output_dir": {
+          "default": "",
+          "title": "Output Dir",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_language_codes"
+      ],
+      "title": "localize_subtitlesArguments"
+    },
+    "output_schema": {
+      "properties": {
+        "result": {
+          "title": "Result",
+          "type": "string"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "title": "localize_subtitlesOutput",
+      "type": "object"
+    }
+  }
+}

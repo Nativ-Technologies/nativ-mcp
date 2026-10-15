@@ -68,7 +68,14 @@ mcp = MCPServer(
         "respect their brand voice and style settings. Translate related text, "
         "subtitle cues, and voiceover segments together with translate_batch "
         "instead of separate translate calls. Surface translation errors before "
-        "synthesizing audio or assembling video."
+        "synthesizing audio or assembling video. For original-speaker dubbing, "
+        "check get_audio_capabilities, use transcribe_audio_detailed to retain "
+        "speaker IDs and full timings, then reuse a saved clone from list_voices "
+        "or create_byo_voice with the user's ownership/permission confirmation. "
+        "Use synthesize_audio_advanced for speaker-specific voices and music. "
+        "Respect the actual processed duration and transcript boundaries. "
+        "Use list_language_settings and list_style_guides for IDs before editing "
+        "workspace settings; persist changes only when requested."
     ),
 )
 
@@ -524,6 +531,10 @@ async def check_image_cultural_fit(image_path: str, countries: str = "") -> str:
 from nativ_mcp.media_tools import register_media_tools
 
 register_media_tools(mcp, _get_client, _read_local_file, _save_base64_image, save_subtitle)
+
+from nativ_mcp.workflow_tools import register_workflow_tools
+
+register_workflow_tools(mcp, _get_client)
 
 
 # ===================== RESOURCES =====================

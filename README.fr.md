@@ -239,3 +239,12 @@ MIT — voir le fichier [LICENSE](LICENSE).
 - [Tableau de bord Nativ](https://dashboard.usenativ.com)
 - [Protocole MCP](https://modelcontextprotocol.io)
 - [Signaler un problème](https://github.com/nativ-ai/nativ-mcp/issues)
+
+
+## Couverture des outils (0.5.0)
+
+Les 51 outils sont disponibles en local et via le serveur MCP hébergé, y compris
+le clonage vocal, le doublage multi-locuteurs, la révision des sous-titres et la
+gestion des mémoires de traduction et des guides de style. Les outils existants
+conservent leurs paramètres et résultats. Consultez la
+[couverture complète](docs/capabilities.md) et la [configuration hébergée](docs/hosting.md).

@@ -19,7 +19,7 @@ from nativ_mcp.runtime import hosted_request
 
 logger = logging.getLogger(__name__)
 MAX_JSON_BYTES = 1024 * 1024
-URL_FIELDS = {"file_path", "image_path", "audio_path", "video_path", "subtitle_path", "glossary_path"}
+URL_FIELDS = {"file_path", "image_path", "audio_path", "video_path", "subtitle_path", "glossary_path", "reference_path", "consent_path"}
 # Only the new HTTP adapter accepts native arrays here. MCP's existing string
 # arguments and serialized JSON remain unchanged.
 ARRAY_FIELDS = {

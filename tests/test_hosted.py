@@ -177,7 +177,7 @@ class HostedTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_json_schema_is_additive_and_preserves_mcp_argument_types(self):
         schema = (await self.http.get("/json-openapi.json")).json()
-        self.assertEqual(len(schema["paths"]), 21)
+        self.assertEqual(len(schema["paths"]), 51)
         for path in schema["paths"].values():
             self.assertEqual(set(path["post"]["requestBody"]["content"]), {"application/json"})
         props = schema["paths"]["/tools/localize_image"]["post"]["requestBody"]["content"]["application/json"]["schema"]["properties"]
