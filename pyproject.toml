@@ -61,6 +61,7 @@ packages = ["src/nativ_mcp"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "src/nativ_mcp/rest-openapi.json" = "nativ_mcp/rest-openapi.json"
+"src/nativ_mcp/review.html" = "nativ_mcp/review.html"
 
 [tool.hatch.build.targets.sdist]
 include = [

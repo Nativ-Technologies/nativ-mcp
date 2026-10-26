@@ -45,7 +45,7 @@ def _get_client() -> NativClient:
             "Create one at https://dashboard.usenativ.com → Settings → API Keys"
         )
     base_url = os.environ.get("NATIV_API_URL")
-    return NativClient(api_key, base_url)
+    return NativClient(api_key, base_url, bearer=remote is not None and remote.authentication == "oauth")
 
 
 def _fmt_json(data: Any) -> str:

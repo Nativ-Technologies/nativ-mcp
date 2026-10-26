@@ -15,17 +15,17 @@ DEFAULT_API_URL = "https://api.usenativ.com"
 class NativClient:
     """Thin async wrapper around the Nativ REST API."""
 
-    def __init__(self, api_key: str, base_url: str | None = None):
+    def __init__(self, api_key: str, base_url: str | None = None, *, bearer: bool = False):
         self.base_url = (base_url or DEFAULT_API_URL).rstrip("/")
         self.headers = {
-            "X-API-Key": api_key,
+            ("Authorization" if bearer else "X-API-Key"): f"Bearer {api_key}" if bearer else api_key,
             "Content-Type": "application/json",
             "User-Agent": f"nativ-mcp/{__version__}",
         }
         # Multipart requests must not set Content-Type; httpx sets the
         # boundary automatically when files are provided.
         self.multipart_headers = {
-            "X-API-Key": api_key,
+            ("Authorization" if bearer else "X-API-Key"): f"Bearer {api_key}" if bearer else api_key,
             "User-Agent": f"nativ-mcp/{__version__}",
         }
 

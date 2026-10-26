@@ -1,0 +1,118 @@
+import asyncio
+import json
+import unittest
+from unittest.mock import AsyncMock, patch
+import httpx
+
+from nativ_mcp.chatgpt import SCOPE, UI_URI
+from nativ_mcp.hosted import create_app
+from nativ_mcp.runtime import hosted_request
+from nativ_mcp.server import _get_client
+
+RESOURCE = 'http://localhost:8080/chatgpt/mcp'
+
+
+class PluginTests(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.seen = []
+        async def authenticate(request):
+            self.seen.append((request.url.path, dict(request.headers)))
+            if request.url.path == '/master-tm/stats':
+                return httpx.Response(200 if request.headers.get('x-api-key') == 'nativ_old' else 401, json={})
+            token = request.headers.get('authorization', '')
+            if token == 'Bearer nat_unavailable': return httpx.Response(500)
+            if token == 'Bearer nat_wrong_resource':
+                return httpx.Response(200, json={'active': True, 'resource': 'https://other.example', 'scope': SCOPE, 'user_id': '42'})
+            if token not in ('Bearer nat_alice', 'Bearer nat_bob'): return httpx.Response(401)
+            return httpx.Response(200, json={'active': True, 'resource': RESOURCE, 'scope': SCOPE, 'user_id': token.split('_')[-1]})
+        self.app = create_app(api_transport=httpx.MockTransport(authenticate))
+        self.ready, self.stop = asyncio.Event(), asyncio.Event()
+        async def run_lifespan():
+            async with self.app.router.lifespan_context(self.app):
+                self.ready.set()
+                await self.stop.wait()
+        self.lifespan_task = asyncio.create_task(run_lifespan())
+        await self.ready.wait()
+        self.http = httpx.AsyncClient(transport=httpx.ASGITransport(app=self.app), base_url='http://localhost:8080')
+
+    async def asyncTearDown(self):
+        await self.http.aclose(); self.stop.set(); await self.lifespan_task
+
+    async def rpc(self, method, params=None, token='nat_alice', path='/chatgpt/mcp'):
+        response = await self.http.post(path, headers={'Authorization': 'Bearer '+token, 'Accept':'application/json, text/event-stream', 'MCP-Protocol-Version':'2025-11-25'}, json={'jsonrpc':'2.0','id':1,'method':method,'params': params or {}})
+        if response.headers.get('content-type','').startswith('text/event-stream'):
+            messages=[json.loads(line[6:]) for line in response.text.splitlines() if line.startswith('data: ')]
+            value=next(m for m in messages if m.get('id') == 1)
+            return response, value
+        return response, response.json()
+
+    async def test_public_discovery_and_fail_closed_authentication(self):
+        response=await self.http.get('/.well-known/oauth-protected-resource/chatgpt/mcp')
+        self.assertEqual(response.status_code,200); self.assertEqual(response.json()['resource'],RESOURCE)
+        self.assertEqual(self.seen, [])
+        for token,status in [('',401),('nativ_old',401),('nat_bad',401),('nat_wrong_resource',401),('nat_unavailable',503)]:
+            response,_=await self.rpc('tools/list',token=token)
+            self.assertEqual(response.status_code,status, response.text)
+            if status==401:self.assertIn('resource_metadata=',response.headers['www-authenticate'])
+        self.assertIsNone(hosted_request.get())
+
+    async def test_separate_catalog_and_ui_metadata(self):
+        response,data=await self.rpc('tools/list')
+        self.assertEqual(response.status_code,200,response.text)
+        tools=data['result']['tools']
+        self.assertEqual(len(tools),7)
+        self.assertNotIn('delete_style_guide',{t['name'] for t in tools})
+        self.assertTrue(all(t['_meta']['securitySchemes'][0]['scopes']==[SCOPE] for t in tools))
+        localize=next(t for t in tools if t['name']=='localize_text')
+        self.assertEqual(localize['_meta']['ui']['resourceUri'],UI_URI)
+        response,data=await self.rpc('resources/read',{'uri':UI_URI})
+        self.assertEqual(data['result']['contents'][0]['mimeType'],'text/html;profile=mcp-app')
+        self.assertIn('ui/notifications/tool-result',data['result']['contents'][0]['text'])
+        response,data=await self.rpc('tools/list',token='nativ_old',path='/mcp')
+        self.assertEqual(len(data['result']['tools']),51)
+
+    async def test_translation_uses_oauth_and_structured_review_without_memory_write(self):
+        observed=[]
+        def client():
+            actual=_get_client();observed.append(actual.headers)
+            result=AsyncMock();result.translate.return_value={'translated_text':'Bonjour','backtranslation':'Hello','rationale':'Greeting','tm_match':{'score':100}}
+            return result
+        with patch('nativ_mcp.chatgpt._get_client',side_effect=client):
+            response,data=await self.rpc('tools/call',{'name':'localize_text','arguments':{'text':'Hello','target_language':'French','target_language_code':'fr','max_characters':4}})
+        self.assertEqual(response.status_code,200,data)
+        self.assertFalse(data['result'].get('isError'),data)
+        result=data['result']['structuredContent']
+        self.assertEqual(result['items'][0]['translation'],'Bonjour')
+        self.assertTrue(result['items'][0]['over_limit'])
+        self.assertEqual(observed[0]['Authorization'],'Bearer nat_alice')
+        self.assertNotIn('X-API-Key',observed[0])
+        self.assertIsNone(hosted_request.get())
+
+    async def test_missing_approval_and_invalid_image_never_call_api(self):
+        client=AsyncMock()
+        with patch('nativ_mcp.chatgpt._get_client',return_value=client):
+            _,data=await self.rpc('tools/call',{'name':'save_approved_translation','arguments':{'source_text':'Hello','target_text':'Bonjour','source_language_code':'en','target_language_code':'fr'}})
+            self.assertTrue(data['result']['isError'])
+            client.add_tm_entry.assert_not_awaited()
+            _,data=await self.rpc('tools/call',{'name':'extract_creative_text','arguments':{'image_url':'file:///etc/passwd'}})
+            self.assertTrue(data['result']['isError'])
+
+    async def test_approved_wording_and_identity_isolation(self):
+        seen=[]
+        def client():
+            seen.append(hosted_request.get().identity)
+            result=AsyncMock();result.add_tm_entry.return_value={'id':'entry-1'}
+            return result
+        with patch('nativ_mcp.chatgpt._get_client',side_effect=client):
+            for token in ['nat_alice','nat_bob']:
+                _,data=await self.rpc('tools/call',{'name':'save_approved_translation','arguments':{'source_text':'Hello','target_text':'Bonjour','source_language_code':'en','target_language_code':'fr','approved':True}},token=token)
+                self.assertFalse(data['result'].get('isError'),data)
+        self.assertEqual(seen,['alice','bob'])
+
+    async def test_failed_translation_does_not_create_fabricated_success(self):
+        client=AsyncMock();client.translate.return_value={'translated_text':''}
+        with patch('nativ_mcp.chatgpt._get_client',return_value=client):
+            _,data=await self.rpc('tools/call',{'name':'localize_text','arguments':{'text':'Hello','target_language':'French','target_language_code':'fr'}})
+        self.assertTrue(data['result']['isError'])
+
+if __name__ == '__main__':unittest.main()
