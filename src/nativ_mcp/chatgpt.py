@@ -20,9 +20,9 @@ from nativ_mcp.progress import tool_progress
 from nativ_mcp.server import _get_client
 
 SCOPE = "nativ:localize"
-UI_URI = "ui://nativ/localization-review-v2.html"
+UI_URI = "ui://nativ/localization-review-v3.html"
 AUTH = {"securitySchemes": [{"type": "oauth2", "scopes": [SCOPE]}]}
-REVIEW = {**AUTH, "ui": {"resourceUri": UI_URI}}
+REVIEW = {**AUTH, "ui": {"resourceUri": UI_URI}, "openai/outputTemplate": UI_URI}
 READ = {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
 GENERATE = {"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": False}
 Text = Annotated[str, Field(min_length=1, max_length=50000)]
@@ -108,7 +108,13 @@ def create_plugin_server():
         instructions="Localise marketing copy with the connected Nativ workspace's brand voice, glossary and translation memory. Read context when needed. Return actual tool results and surface errors; do not invent translations on tool failure. Generated copy is a draft. Save to translation memory only after the user explicitly approves the exact source and translation. Never request credentials in chat. Image tools require an accessible HTTPS image URL; ask for one if an attachment cannot be handed off. Calls can use the user's Nativ credits.")
 
     @server.resource(UI_URI, name="localization_review", title="Nativ localisation review",
-                     mime_type="text/html;profile=mcp-app", meta={"ui": {"prefersBorder": True, "domain": "https://mcp.usenativ.com", "csp": {"connectDomains": [], "resourceDomains": ["https://storage.googleapis.com"]}}})
+                     mime_type="text/html;profile=mcp-app", meta={
+                         "ui": {"prefersBorder": True, "domain": "https://mcp.usenativ.com", "csp": {"connectDomains": [], "resourceDomains": ["https://storage.googleapis.com"]}},
+                         "openai/ui": {"availableDisplayModes": ["inline", "fullscreen"]},
+                         "openai/widgetPrefersBorder": True,
+                         "openai/widgetDomain": "https://mcp.usenativ.com",
+                         "openai/widgetCSP": {"connect_domains": [], "resource_domains": ["https://storage.googleapis.com"]},
+                         "openai/widgetDescription": "Compare draft source and localised wording, character counts and actual review data. Copy or download results; ask in the conversation to revise."})
     def review_ui() -> str:
         return Path(__file__).with_name("review.html").read_text()
 

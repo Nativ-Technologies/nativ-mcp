@@ -67,9 +67,15 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(all(t['_meta']['securitySchemes'][0]['scopes']==[SCOPE] for t in tools))
         localize=next(t for t in tools if t['name']=='localize_text')
         self.assertEqual(localize['_meta']['ui']['resourceUri'],UI_URI)
+        self.assertEqual(localize['_meta']['openai/outputTemplate'], UI_URI)
         response,data=await self.rpc('resources/read',{'uri':UI_URI})
         self.assertEqual(data['result']['contents'][0]['mimeType'],'text/html;profile=mcp-app')
         self.assertIn('ui/notifications/tool-result',data['result']['contents'][0]['text'])
+        meta = data['result']['contents'][0]['_meta']
+        self.assertEqual(meta['ui']['domain'], meta['openai/widgetDomain'])
+        self.assertEqual(meta['ui']['csp']['connectDomains'], meta['openai/widgetCSP']['connect_domains'])
+        self.assertEqual(meta['ui']['csp']['resourceDomains'], meta['openai/widgetCSP']['resource_domains'])
+        self.assertEqual(meta['openai/ui']['availableDisplayModes'], ['inline', 'fullscreen'])
         response,data=await self.rpc('tools/list',token='nativ_old',path='/mcp')
         self.assertEqual(len(data['result']['tools']),51)
 
