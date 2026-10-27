@@ -101,13 +101,41 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
         seen=[]
         def client():
             seen.append(hosted_request.get().identity)
-            result=AsyncMock();result.add_tm_entry.return_value={'id':'entry-1'}
+            result=AsyncMock();result.add_tm_entry.return_value={'id':'entry-1'};result.search_tm.return_value={'matches':[]}
             return result
         with patch('nativ_mcp.chatgpt._get_client',side_effect=client):
             for token in ['nat_alice','nat_bob']:
                 _,data=await self.rpc('tools/call',{'name':'save_approved_translation','arguments':{'source_text':'Hello','target_text':'Bonjour','source_language_code':'en','target_language_code':'fr','approved':True}},token=token)
                 self.assertFalse(data['result'].get('isError'),data)
         self.assertEqual(seen,['alice','bob'])
+
+    async def test_repeating_an_approved_exact_pair_does_not_write_again(self):
+        client=AsyncMock()
+        match={'tm_id':'existing', 'source_text':'Hello', 'target_text':'Bonjour', 'information_source':'manual', 'source_name':None}
+        client.search_tm.return_value={'matches':[match]}
+        args={'name':'save_approved_translation','arguments':{'source_text':'Hello','target_text':'Bonjour','source_language_code':'en','target_language_code':'fr','approved':True}}
+        with patch('nativ_mcp.chatgpt._get_client',return_value=client):
+            _,data=await self.rpc('tools/call',args)
+        self.assertFalse(data['result'].get('isError'))
+        self.assertEqual(data['result']['structuredContent']['status'],'already_saved')
+        client.add_tm_entry.assert_not_awaited()
+        client.search_tm.assert_awaited_once_with('Hello',source_lang='en',target_lang='fr',limit=10)
+
+    async def test_racing_approved_save_requires_evidence_of_existing_pair(self):
+        client=AsyncMock()
+        match={'tm_id':'existing', 'source_text':'Hello', 'target_text':'Bonjour', 'information_source':'manual', 'source_name':None}
+        client.search_tm.side_effect=[{'matches':[]},{'matches':[match]}]
+        response=httpx.Response(500,request=httpx.Request('POST','https://api.usenativ.com/master-tm/entries'))
+        client.add_tm_entry.side_effect=httpx.HTTPStatusError('duplicate',request=response.request,response=response)
+        args={'name':'save_approved_translation','arguments':{'source_text':'Hello','target_text':'Bonjour','source_language_code':'en','target_language_code':'fr','approved':True}}
+        with patch('nativ_mcp.chatgpt._get_client',return_value=client):
+            _,data=await self.rpc('tools/call',args)
+        self.assertFalse(data['result'].get('isError'))
+        self.assertEqual(data['result']['structuredContent']['entry']['tm_id'],'existing')
+        client.search_tm.side_effect=[{'matches':[]},{'matches':[]}]
+        with patch('nativ_mcp.chatgpt._get_client',return_value=client):
+            _,data=await self.rpc('tools/call',args)
+        self.assertTrue(data['result'].get('isError'))
 
     async def test_overlapping_callers_keep_separate_identities_and_limit_concurrency(self):
         ready, release = asyncio.Event(), asyncio.Event()
