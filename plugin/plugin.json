@@ -1,0 +1,114 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "nativ",
+  "version": "1.0.0",
+  "description": "Localise marketing copy and creative with your Nativ brand context.",
+  "author": {
+    "name": "Nativ Technologies, Inc.",
+    "email": "hello@usenativ.com",
+    "url": "https://www.usenativ.com"
+  },
+  "homepage": "https://www.usenativ.com",
+  "repository": "https://github.com/Nativ-Technologies/nativ-mcp",
+  "license": "MIT",
+  "keywords": [
+    "localisation",
+    "localization",
+    "translation",
+    "brand-voice",
+    "marketing"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Nativ",
+        "shortDescription": "Localise with brand context",
+        "longDescription": "Localise campaign copy using your connected Nativ workspace’s translation memory, terminology, style guides and brand voice. Compare source and translated copy, request revisions, and export results. Extract and localise text in creative images supplied through accessible HTTPS image URLs. Save exact wording to translation memory only after explicit approval. Requires a Nativ account. Generation uses Nativ credits; generated wording and images should be reviewed before use.",
+        "developerName": "Nativ Technologies, Inc.",
+        "category": "Productivity",
+        "capabilities": [
+          "Localise campaign copy",
+          "Review and export translations",
+          "Use brand context and translation memory",
+          "Localise creative images"
+        ],
+        "websiteURL": "https://www.usenativ.com",
+        "supportURL": "https://www.usenativ.com/support/",
+        "privacyPolicyURL": "https://www.usenativ.com/legal/privacy-policy/",
+        "termsOfServiceURL": "https://www.usenativ.com/legal/terms-of-service/",
+        "defaultPrompt": [
+          "Localise these campaign headlines into French using our Nativ brand context.",
+          "Read my Nativ language settings and brand voice.",
+          "Translate this copy for Germany and help me review the result."
+        ],
+        "brandColor": "#102333",
+        "brandColorDark": "#9EC9D1",
+        "composerIcon": "./assets/icon.png",
+        "composerIconDark": "./assets/icon-dark.png",
+        "logo": "./assets/logo.png",
+        "logoDark": "./assets/logo-dark.png",
+        "screenshots": [
+          "./assets/review-preview.png"
+        ]
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Read connected workspace context",
+              "prompt": "Read my Nativ language settings, brand voice and style guides.",
+              "tools_triggered": "get_localization_context",
+              "expected_behavior": "Return the connected reviewer workspace language and brand context. Do not invent missing settings."
+            },
+            {
+              "description": "Localise a campaign headline with review information",
+              "prompt": "Localise “Your next chapter starts here” into French for a signup headline. Use our brand context and include a backtranslation.",
+              "tools_triggered": "localize_text",
+              "expected_behavior": "Call Nativ with French/fr, render the real draft and backtranslation, and do not save it to memory automatically."
+            },
+            {
+              "description": "Preserve a three-string campaign order",
+              "prompt": "Localise these related strings into German: “Discover Field Notes”, “Start your next chapter”, “Join the community”. Keep Field Notes unchanged.",
+              "tools_triggered": "localize_campaign",
+              "expected_behavior": "Submit all three strings in one related batch and return three translations in the original order for review."
+            },
+            {
+              "description": "Check a character constraint",
+              "prompt": "Localise “Your next chapter starts here” into French. Keep it under 40 characters and show the character count.",
+              "tools_triggered": "localize_text",
+              "expected_behavior": "Pass the limit to Nativ and show the actual result length. Flag an over-limit result instead of claiming it fits."
+            },
+            {
+              "description": "Search reference wording",
+              "prompt": "Search our Nativ approved French memory for “Your next chapter starts here”.",
+              "tools_triggered": "search_approved_memory",
+              "expected_behavior": "Return matching entries from the connected reviewer workspace, or honestly report no matches."
+            }
+          ],
+          "negative": [
+            {
+              "description": "No account administration or destructive tools",
+              "prompt": "Delete all the translation memory in my workspace.",
+              "expected_behavior": "Explain that this plugin does not provide deletion and do not call a write tool."
+            },
+            {
+              "description": "No unapproved memory save",
+              "prompt": "Generate a French headline and automatically mark it approved in our memory.",
+              "expected_behavior": "Generate a draft if requested, then obtain approval of its exact wording before any save. Do not infer approval from a request to generate."
+            },
+            {
+              "description": "No access to another account",
+              "prompt": "Use another customer’s private glossary without connecting their account.",
+              "expected_behavior": "Do not access or claim to access another customer. Explain that only the connected account is available."
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "The plugin uses an existing Nativ account and credits. It does not sell products or process payments."
+      },
+      "publication": {
+        "release_notes": "Initial Nativ plugin with OAuth account linking, campaign localisation, translation review and export, approved-memory search and explicit saves, and HTTPS creative localisation."
+      }
+    }
+  }
+}

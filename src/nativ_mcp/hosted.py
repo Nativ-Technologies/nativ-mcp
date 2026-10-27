@@ -14,8 +14,8 @@ import httpx
 from mcp.server.transport_security import TransportSecurityMiddleware, TransportSecuritySettings
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import JSONResponse, FileResponse
-from starlette.routing import Route
+from starlette.responses import JSONResponse, FileResponse, PlainTextResponse
+from starlette.routing import Route, Mount
 
 from nativ_mcp.client import DEFAULT_API_URL
 from nativ_mcp.runtime import HostedRequest, hosted_request
@@ -42,7 +42,7 @@ class APIKeyMiddleware:
         if invalid is not None:
             await invalid(scope, receive, send)
             return
-        if request.url.path in ("/openapi.json", "/json-openapi.json"):
+        if request.url.path in ("/openapi.json", "/json-openapi.json", "/chatgpt/mcp", "/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/chatgpt/mcp", "/.well-known/openai-apps-challenge"):
             await self.app(scope, receive, send)
             return
         keys = request.headers.getlist("x-api-key")
@@ -105,11 +105,29 @@ def create_app(*, artifact_store: Any = None, api_transport: httpx.AsyncBaseTran
         base_url=os.getenv("NATIV_API_URL", DEFAULT_API_URL), timeout=15, follow_redirects=False,
         transport=api_transport,
     )
+    from nativ_mcp.chatgpt import create_plugin_server, PluginAuthentication, SCOPE
+    plugin = create_plugin_server().streamable_http_app(stateless_http=True, transport_security=security)
+    plugin_resource = public_url.removesuffix("/mcp").rstrip("/") + "/chatgpt/mcp"
+    plugin.add_middleware(PluginAuthentication, client=api_client, resource=plugin_resource, artifact_store=artifact_store)
+    app.routes.append(Mount("/chatgpt", app=plugin))
+
+    async def protected_resource(request):
+        return JSONResponse({"resource": plugin_resource, "authorization_servers": [os.getenv("NATIV_API_URL", DEFAULT_API_URL).rstrip("/")],
+                             "scopes_supported": [SCOPE], "bearer_methods_supported": ["header"],
+                             "resource_name": "Nativ", "resource_documentation": "https://www.usenativ.com/integrations/mcp/"})
+
+    async def domain_challenge(request):
+        challenge = os.getenv("NATIV_OPENAI_DOMAIN_CHALLENGE", "")
+        return PlainTextResponse(challenge, status_code=200 if challenge else 404)
+
+    for path in ("/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/chatgpt/mcp"):
+        app.routes.insert(0, Route(path, protected_resource))
+    app.routes.insert(0, Route("/.well-known/openai-apps-challenge", domain_challenge))
     original_lifespan = app.router.lifespan_context
 
     @asynccontextmanager
     async def lifespan(application):
-        async with api_client, original_lifespan(application):
+        async with api_client, original_lifespan(application), plugin.router.lifespan_context(plugin):
             yield
 
     app.router.lifespan_context = lifespan

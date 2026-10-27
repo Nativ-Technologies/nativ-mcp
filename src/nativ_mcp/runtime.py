@@ -9,6 +9,8 @@ from typing import Any
 class HostedRequest:
     api_key: str
     artifact_store: Any
+    authentication: str = "api_key"
+    identity: str = ""
     max_media_bytes: int = 100 * 1024 * 1024
     artifacts: list[dict[str, Any]] = field(default_factory=list)
 
