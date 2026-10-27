@@ -23,7 +23,7 @@
       "interface": {
         "displayName": "Nativ",
         "shortDescription": "Localise with brand context",
-        "longDescription": "Localise campaign copy using your connected Nativ workspace’s translation memory, terminology, style guides and brand voice. Compare source and translated copy, request revisions, and export results. Extract and localise text in creative images supplied through accessible HTTPS image URLs. Save exact wording to translation memory only after explicit approval. Requires a Nativ account. Generation uses Nativ credits; generated wording and images should be reviewed before use.",
+        "longDescription": "Localise campaign copy using your connected Nativ workspace’s translation memory, terminology, style guides and brand voice. Compare source and translated copy, request revisions, and export results. Extract and localise text in creative images supplied through accessible HTTPS image URLs. Save exact wording to translation memory only after explicit approval. Requires a Nativ admin or maintainer account with AI access. MFA-protected account linking is not yet supported. Generation uses Nativ credits; generated wording and images should be reviewed before use.",
         "developerName": "Nativ Technologies, Inc.",
         "category": "Productivity",
         "capabilities": [

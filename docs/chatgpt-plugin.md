@@ -13,7 +13,7 @@ It does not accept a manually supplied Nativ API key.
 ## Deployment order
 
 1. Apply `nativ-backend/migrations/20261026_mcp_oauth_pkce.sql` before deploying backend code. The four nullable columns are additive; legacy GPT Actions grants retain their existing semantics.
-2. Deploy the backend OAuth changes. Public client ID `nativ-chatgpt-plugin` requires S256 PKCE, the exact resource `https://mcp.usenativ.com/chatgpt/mcp`, and scope `nativ:localize`. This client has no secret. The legacy GPT Actions client still requires its existing secret.
+2. Apply `nativ-backend/migrations/20261027_mcp_oauth_member.sql`, then deploy the backend member-binding update. Plugin users need current admin or maintainer permissions. Missing, moved, demoted or MFA-protected members fail closed. Existing resource-bound grants must reconnect. Deploy the backend OAuth changes. Public client ID `nativ-chatgpt-plugin` requires S256 PKCE, the exact resource `https://mcp.usenativ.com/chatgpt/mcp`, and scope `nativ:localize`. This client has no secret. The legacy GPT Actions client still requires its existing secret.
 3. Deploy the MCP service with its existing API URL, storage bucket, signing account, public URL and host allowlists. No new external runtime dependency is needed.
 4. Verify public resource discovery, authorization-server discovery, an unauthenticated 401 challenge, then a real authorization-code exchange and tool call with a dedicated reviewer account.
 5. Upload the ZIP through OpenAI Platform Plugins under Nativ. Complete publisher/domain verification and reviewer information. Set `NATIV_OPENAI_DOMAIN_CHALLENGE` on the MCP service to the exact challenge value shown by the portal. It is served verbatim from `/.well-known/openai-apps-challenge`.

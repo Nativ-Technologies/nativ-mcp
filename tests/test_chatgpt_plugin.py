@@ -1,12 +1,14 @@
 import asyncio
+import csv
+import io
 import json
 import unittest
 from unittest.mock import AsyncMock, patch
 import httpx
 
-from nativ_mcp.chatgpt import SCOPE, UI_URI
+from nativ_mcp.chatgpt import SCOPE, UI_URI, csv_bytes, with_csv_export
 from nativ_mcp.hosted import create_app
-from nativ_mcp.runtime import hosted_request
+from nativ_mcp.runtime import hosted_request, HostedRequest
 from nativ_mcp.server import _get_client
 
 RESOURCE = 'http://localhost:8080/chatgpt/mcp'
@@ -88,6 +90,22 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn('X-API-Key',observed[0])
         self.assertIsNone(hosted_request.get())
 
+    async def test_context_and_saved_results_omit_unneeded_account_and_audit_fields(self):
+        client=AsyncMock()
+        client.get_languages.return_value={'languages':[{'id':1,'user_id':42,'language':'French','language_code':'fr'}]}
+        client.get_brand_prompt.return_value={'user_id':42,'prompt':'Keep Field Notes unchanged','updated_at':'timestamp'}
+        client.list_style_guides.return_value=[{'id':2,'title':'Field Notes','content':'Warm tone','created_at':'timestamp'}]
+        client.search_tm.return_value={'matches':[]}
+        client.add_tm_entry.return_value={'id':'entry-1','user_id':42,'end_user_id':7,'created_at':'timestamp','source_text':'Hello','target_text':'Bonjour'}
+        with patch('nativ_mcp.chatgpt._get_client',return_value=client):
+            _,data=await self.rpc('tools/call',{'name':'get_localization_context','arguments':{}})
+            context=data['result']['structuredContent']
+            self.assertEqual(context['languages']['languages'],[{'language':'French','language_code':'fr'}])
+            self.assertEqual(context['brand_voice'],{'prompt':'Keep Field Notes unchanged'})
+            self.assertEqual(context['style_guides'],[{'title':'Field Notes','content':'Warm tone'}])
+            _,data=await self.rpc('tools/call',{'name':'save_approved_translation','arguments':{'source_text':'Hello','target_text':'Bonjour','source_language_code':'en','target_language_code':'fr','approved':True}})
+            self.assertEqual(data['result']['structuredContent'],{'status':'saved','tm_id':'entry-1','entry':{'source_text':'Hello','target_text':'Bonjour'}})
+
     async def test_missing_approval_and_invalid_image_never_call_api(self):
         client=AsyncMock()
         with patch('nativ_mcp.chatgpt._get_client',return_value=client):
@@ -167,3 +185,36 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(data['result']['isError'])
 
 if __name__ == '__main__':unittest.main()
+
+
+class CSVExportTests(unittest.IsolatedAsyncioTestCase):
+    async def test_export_roundtrip_and_formula_protection(self):
+        items = [{"source": 'Hello, "world"\nSecond line', "translation": 'Bonjour, "monde"'},
+                 {"source": " =HYPERLINK(1)", "translation": "@formula"},
+                 {"source": "-formula", "translation": "\tvalue"}]
+        data = csv_bytes(items, "fr")
+        self.assertTrue(data.startswith(b"\xef\xbb\xbf"))
+        rows = list(csv.reader(io.StringIO(data.decode("utf-8-sig"))))
+        self.assertEqual(rows, [["Source", "Translation", "Language"],
+                               [items[0]["source"], items[0]["translation"], "fr"],
+                               ["' =HYPERLINK(1)", "'@formula", "fr"],
+                               ["'-formula", "'\tvalue", "fr"]])
+
+    async def test_export_uses_existing_temporary_store_and_preserves_draft_on_failure(self):
+        store = AsyncMock()
+        store.save.return_value = "https://storage.googleapis.com/private/temporary.csv?signature=test"
+        token = hosted_request.set(HostedRequest(api_key="nat_fixture", artifact_store=store))
+        try:
+            draft = {"items": [{"source": "Hello", "translation": "Bonjour"}], "language_code": "fr", "status": "draft"}
+            result = await with_csv_export(dict(draft))
+            self.assertEqual(result["artifacts"][0]["url"], store.save.return_value)
+            self.assertEqual(result["artifacts"][0]["expires_in_seconds"], 3600)
+            self.assertEqual(store.save.await_args.args, (csv_bytes(draft["items"], "fr"), "nativ-localisation.csv", "text/csv;charset=utf-8"))
+            store.save.side_effect = RuntimeError("private storage detail")
+            failed = await with_csv_export(dict(draft))
+            self.assertEqual(failed["items"], draft["items"])
+            self.assertIn("temporarily unavailable", failed["export_error"])
+            self.assertNotIn("private storage detail", str(failed))
+            self.assertNotIn("artifacts", failed)
+        finally:
+            hosted_request.reset(token)

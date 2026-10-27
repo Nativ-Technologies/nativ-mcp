@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 import asyncio
+import csv
+import io
 from pathlib import Path
 from typing import Annotated, Any
 from urllib.parse import urlsplit
@@ -18,12 +20,47 @@ from nativ_mcp.progress import tool_progress
 from nativ_mcp.server import _get_client
 
 SCOPE = "nativ:localize"
-UI_URI = "ui://nativ/localization-review-v1.html"
+UI_URI = "ui://nativ/localization-review-v2.html"
 AUTH = {"securitySchemes": [{"type": "oauth2", "scopes": [SCOPE]}]}
 REVIEW = {**AUTH, "ui": {"resourceUri": UI_URI}}
 READ = {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
 GENERATE = {"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": False}
 Text = Annotated[str, Field(min_length=1, max_length=50000)]
+
+
+def context_content(value):
+    """Keep useful workspace content without unrelated account/audit metadata."""
+    if isinstance(value, dict):
+        hidden = {"id", "user_id", "end_user_id", "auth_id", "created_at", "updated_at", "request_id", "trace_id", "session_id"}
+        return {key: context_content(item) for key, item in value.items() if key not in hidden}
+    if isinstance(value, list):
+        return [context_content(item) for item in value]
+    return value
+
+
+def csv_bytes(items, language):
+    """Export literal cells, including formula-like marketing copy, as UTF-8 CSV."""
+    def cell(value):
+        text = str(value or "")
+        return "'" + text if (text.startswith(("\t", "\r", "\n")) or text.lstrip().startswith(("=", "+", "-", "@"))) else text
+    output = io.StringIO(newline="")
+    writer = csv.writer(output)
+    writer.writerow(["Source", "Translation", "Language"])
+    writer.writerows([[cell(item["source"]), cell(item["translation"]), cell(language)] for item in items])
+    return output.getvalue().encode("utf-8-sig")
+
+
+async def with_csv_export(result):
+    # Browser sandbox download policies vary. Reuse the existing private output
+    # store so export is an ordinary temporary HTTPS download, like creatives.
+    remote = hosted_request.get()
+    if remote is not None and remote.artifact_store is not None:
+        try:
+            url = await remote.artifact_store.save(csv_bytes(result["items"], result["language_code"]), "nativ-localisation.csv", "text/csv;charset=utf-8")
+            result["artifacts"] = [{"url": url, "filename": "nativ-localisation.csv", "mime_type": "text/csv", "expires_in_seconds": 3600}]
+        except Exception:
+            result["export_error"] = "CSV export is temporarily unavailable. Your draft remains available."
+    return result
 
 
 class PluginAuthentication:
@@ -79,8 +116,8 @@ def create_plugin_server():
     async def get_localization_context() -> dict[str, Any]:
         """Read configured languages, brand voice and style guides in the connected workspace before a localisation task."""
         client = _get_client()
-        return {"languages": await client.get_languages(), "brand_voice": await client.get_brand_prompt(),
-                "style_guides": await client.list_style_guides()}
+        return context_content({"languages": await client.get_languages(), "brand_voice": await client.get_brand_prompt(),
+                "style_guides": await client.list_style_guides()})
 
     @server.tool(title="Localise campaign copy", annotations=GENERATE, meta=REVIEW)
     async def localize_text(text: Text, target_language: str, target_language_code: str,
@@ -94,10 +131,10 @@ def create_plugin_server():
         translated = result.get("translated_text")
         if not isinstance(translated, str) or not translated.strip():
             raise ToolError("Nativ returned no translation; no successful localisation is being reported")
-        return {"kind": "text", "status": "draft", "language": target_language, "language_code": target_language_code,
+        return await with_csv_export({"kind": "text", "status": "draft", "language": target_language, "language_code": target_language_code,
                 "items": [{"source": text, "translation": translated, "characters": len(translated),
                            "max_characters": max_characters, "over_limit": bool(max_characters and len(translated) > max_characters),
-                           "backtranslation": result.get("backtranslation"), "rationale": result.get("rationale"), "tm_match": result.get("tm_match")} ]}
+                           "backtranslation": result.get("backtranslation"), "rationale": result.get("rationale"), "tm_match": result.get("tm_match")} ]})
 
     @server.tool(title="Localise related campaign strings", annotations=GENERATE, meta=REVIEW)
     async def localize_campaign(texts: Annotated[list[Text], Field(min_length=1, max_length=32)], target_language: str,
@@ -108,8 +145,8 @@ def create_plugin_server():
                       source_language=source_language, source_language_code=source_language_code, context=context or None)
         if len(results) != len(texts) or any(not isinstance(r.get("translated_text"), str) or not r["translated_text"].strip() for r in results):
             raise ToolError("Nativ returned an incomplete campaign; do not report a complete result")
-        return {"kind": "text", "status": "draft", "language": target_language, "language_code": target_language_code,
-                "items": [{"source": text, "translation": r["translated_text"], "characters": len(r["translated_text"]), "tm_match": r.get("tm_match")} for text, r in zip(texts, results)]}
+        return await with_csv_export({"kind": "text", "status": "draft", "language": target_language, "language_code": target_language_code,
+                "items": [{"source": text, "translation": r["translated_text"], "characters": len(r["translated_text"]), "tm_match": r.get("tm_match")} for text, r in zip(texts, results)]})
 
     @server.tool(title="Search approved translation memory", annotations=READ, meta=AUTH)
     async def search_approved_memory(query: Text, source_language_code: str = "en", target_language_code: str = "") -> dict[str, Any]:
@@ -129,13 +166,14 @@ def create_plugin_server():
             for match in memory.get("matches", []):
                 if (match.get("source_text") == source_text and match.get("target_text") == target_text
                         and match.get("information_source") == "manual" and not match.get("source_name")):
-                    return {"status": "already_saved", "entry": match}
+                    return {"status": "already_saved", "entry": context_content(match)}
 
         existing = await existing_pair()
         if existing:
             return existing
         try:
-            return await client.add_tm_entry(source_text, target_text, source_language_code=source_language_code, target_language_code=target_language_code)
+            entry = await client.add_tm_entry(source_text, target_text, source_language_code=source_language_code, target_language_code=target_language_code)
+            return {"status": "saved", "tm_id": entry.get("id"), "entry": context_content(entry)}
         except httpx.HTTPStatusError as error:
             # The API rejects duplicate inserts. Another request may have saved
             # the same pair after our lookup; report success only if it exists.

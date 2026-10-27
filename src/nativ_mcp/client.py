@@ -46,7 +46,7 @@ class NativClient:
                 params=params,
             )
             if resp.status_code == 402:
-                raise RuntimeError("Insufficient Nativ credits. Top up at https://dashboard.usenativ.com")
+                raise RuntimeError("Insufficient Nativ credits for this request." if "Authorization" in self.headers else "Insufficient Nativ credits. Top up at https://dashboard.usenativ.com")
             resp.raise_for_status()
             return resp.json()
 
@@ -68,7 +68,7 @@ class NativClient:
                 params=params,
             )
             if resp.status_code == 402:
-                raise RuntimeError("Insufficient Nativ credits. Top up at https://dashboard.usenativ.com")
+                raise RuntimeError("Insufficient Nativ credits for this request." if "Authorization" in self.headers else "Insufficient Nativ credits. Top up at https://dashboard.usenativ.com")
             resp.raise_for_status()
             return resp.json()
 
