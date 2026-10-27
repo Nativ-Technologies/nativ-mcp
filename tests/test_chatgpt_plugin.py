@@ -109,6 +109,29 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
                 self.assertFalse(data['result'].get('isError'),data)
         self.assertEqual(seen,['alice','bob'])
 
+    async def test_overlapping_callers_keep_separate_identities_and_limit_concurrency(self):
+        ready, release = asyncio.Event(), asyncio.Event()
+        identities = []
+        async def translate(*args, **kwargs):
+            identity = hosted_request.get().identity
+            identities.append(identity)
+            if len(identities) == 4: ready.set()
+            await release.wait()
+            self.assertEqual(hosted_request.get().identity, identity)
+            return {'translated_text': 'Bonjour'}
+        client = AsyncMock(); client.translate.side_effect = translate
+        arguments = {'name':'localize_text','arguments':{'text':'Hello','target_language':'French','target_language_code':'fr'}}
+        with patch('nativ_mcp.chatgpt._get_client', return_value=client):
+            calls=[asyncio.create_task(self.rpc('tools/call', arguments, token=token)) for token in ['nat_alice','nat_bob','nat_alice','nat_bob']]
+            await asyncio.wait_for(ready.wait(), 2)
+            response,_=await self.rpc('tools/call', arguments)
+            self.assertEqual(response.status_code,429)
+            release.set()
+            completed=await asyncio.gather(*calls)
+            self.assertTrue(all(not result['result'].get('isError') for _,result in completed))
+        self.assertEqual(sorted(identities), ['alice','alice','bob','bob'])
+        self.assertIsNone(hosted_request.get())
+
     async def test_failed_translation_does_not_create_fabricated_success(self):
         client=AsyncMock();client.translate.return_value={'translated_text':''}
         with patch('nativ_mcp.chatgpt._get_client',return_value=client):

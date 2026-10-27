@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import asyncio
 from pathlib import Path
 from typing import Annotated, Any
 from urllib.parse import urlsplit
@@ -13,6 +14,7 @@ from pydantic import Field
 from starlette.responses import JSONResponse
 
 from nativ_mcp.runtime import HostedRequest, hosted_request
+from nativ_mcp.progress import tool_progress
 from nativ_mcp.server import _get_client
 
 SCOPE = "nativ:localize"
@@ -27,6 +29,7 @@ Text = Annotated[str, Field(min_length=1, max_length=50000)]
 class PluginAuthentication:
     def __init__(self, app, *, client, resource, artifact_store):
         self.app, self.client, self.resource, self.artifact_store = app, client, resource, artifact_store
+        self.slots = asyncio.Semaphore(4)
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
@@ -50,16 +53,21 @@ class PluginAuthentication:
             challenge = f'Bearer resource_metadata="{origin}/.well-known/oauth-protected-resource/chatgpt/mcp", scope="{SCOPE}"'
             return await JSONResponse({"error": "Connect your Nativ account to use this plugin"}, status_code=401,
                                       headers={"WWW-Authenticate": challenge, "Cache-Control": "no-store"})(scope, receive, send)
+        try:
+            await asyncio.wait_for(self.slots.acquire(), timeout=0.1)
+        except TimeoutError:
+            return await JSONResponse({"error": "Nativ is busy; retry shortly"}, status_code=429, headers={"Retry-After": "2"})(scope, receive, send)
         identity = hosted_request.set(HostedRequest(api_key=token, artifact_store=self.artifact_store,
                                                    authentication="oauth", identity=str(record["user_id"])))
         try:
             await self.app(scope, receive, send)
         finally:
             hosted_request.reset(identity)
+            self.slots.release()
 
 
 def create_plugin_server():
-    server = MCPServer("nativ-chatgpt", title="Nativ", version="1.0.0", website_url="https://www.usenativ.com",
+    server = MCPServer("nativ-chatgpt", middleware=[tool_progress], title="Nativ", version="1.0.0", website_url="https://www.usenativ.com",
         instructions="Localise marketing copy with the connected Nativ workspace's brand voice, glossary and translation memory. Read context when needed. Return actual tool results and surface errors; do not invent translations on tool failure. Generated copy is a draft. Save to translation memory only after the user explicitly approves the exact source and translation. Never request credentials in chat. Image tools require an accessible HTTPS image URL; ask for one if an attachment cannot be handed off. Calls can use the user's Nativ credits.")
 
     @server.resource(UI_URI, name="localization_review", title="Nativ localisation review",
