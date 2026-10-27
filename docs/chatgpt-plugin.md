@@ -33,3 +33,8 @@ It does not accept a manually supplied Nativ API key.
 ## Verification
 
 Run the complete MCP unittest suite against the production lockfile's MCP version (2.0.0), and the backend `test_mcp_oauth.py` HTTP/security regression suite. Mocked tests do not replace the required real ChatGPT reviewer scenarios.
+
+
+## Reviewer walkthrough
+
+A captioned walkthrough of actual ChatGPT Work UI captures, using only the fictional Field Notes workspace, is available at https://www.usenativ.com/review/chatgpt/. The video is a shortened sequence rather than a continuous screen recording. It discloses the observed initial card-loading retry, account requirements and current image input limits. The package screenshot is an actual review-card capture, not a mock interface. Reviewer credentials are supplied privately in the submission portal and must never be committed.
