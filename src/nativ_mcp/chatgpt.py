@@ -122,7 +122,28 @@ def create_plugin_server():
         """Save this exact source/translation pair to workspace memory only after the user explicitly approves it. This changes shared translation memory. approved must be true; a request to generate or revise copy is not approval."""
         if approved is not True:
             raise ToolError("Explicit approval of the exact wording is required before saving translation memory")
-        return await _get_client().add_tm_entry(source_text, target_text, source_language_code=source_language_code, target_language_code=target_language_code)
+        client = _get_client()
+
+        async def existing_pair():
+            memory = await client.search_tm(source_text, source_lang=source_language_code, target_lang=target_language_code, limit=10)
+            for match in memory.get("matches", []):
+                if (match.get("source_text") == source_text and match.get("target_text") == target_text
+                        and match.get("information_source") == "manual" and not match.get("source_name")):
+                    return {"status": "already_saved", "entry": match}
+
+        existing = await existing_pair()
+        if existing:
+            return existing
+        try:
+            return await client.add_tm_entry(source_text, target_text, source_language_code=source_language_code, target_language_code=target_language_code)
+        except httpx.HTTPStatusError as error:
+            # The API rejects duplicate inserts. Another request may have saved
+            # the same pair after our lookup; report success only if it exists.
+            if error.response.status_code == 500:
+                existing = await existing_pair()
+                if existing:
+                    return existing
+            raise
 
     @server.tool(title="Extract text from a creative", annotations={**READ, "openWorldHint": True}, meta=AUTH)
     async def extract_creative_text(image_url: str) -> dict[str, Any]:
