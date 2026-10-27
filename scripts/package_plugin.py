@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('output',type=Path)
 args = parser.parse_args()
 manifest=json.loads((ROOT/'plugin.json').read_text())
+assert 1 <= len(manifest['extensions']['com.openai']['interface']['shortDescription']) <= 30, 'Directory subtitle must fit 30 characters'
 mcp=json.loads((ROOT/'mcp.json').read_text())
 auth=mcp['mcpServers']['nativ']['extensions']['com.openai']['auth']
 assert auth['type']=='oauth' and auth['client']['tokenEndpointAuthMethod']=='none'
