@@ -26,6 +26,16 @@ GENERATE = {"readOnlyHint": False, "destructiveHint": False, "idempotentHint": F
 Text = Annotated[str, Field(min_length=1, max_length=50000)]
 
 
+def context_content(value):
+    """Keep useful workspace content without unrelated account/audit metadata."""
+    if isinstance(value, dict):
+        hidden = {"id", "user_id", "end_user_id", "auth_id", "created_at", "updated_at", "request_id", "trace_id", "session_id"}
+        return {key: context_content(item) for key, item in value.items() if key not in hidden}
+    if isinstance(value, list):
+        return [context_content(item) for item in value]
+    return value
+
+
 class PluginAuthentication:
     def __init__(self, app, *, client, resource, artifact_store):
         self.app, self.client, self.resource, self.artifact_store = app, client, resource, artifact_store
@@ -79,8 +89,8 @@ def create_plugin_server():
     async def get_localization_context() -> dict[str, Any]:
         """Read configured languages, brand voice and style guides in the connected workspace before a localisation task."""
         client = _get_client()
-        return {"languages": await client.get_languages(), "brand_voice": await client.get_brand_prompt(),
-                "style_guides": await client.list_style_guides()}
+        return context_content({"languages": await client.get_languages(), "brand_voice": await client.get_brand_prompt(),
+                "style_guides": await client.list_style_guides()})
 
     @server.tool(title="Localise campaign copy", annotations=GENERATE, meta=REVIEW)
     async def localize_text(text: Text, target_language: str, target_language_code: str,
@@ -129,13 +139,14 @@ def create_plugin_server():
             for match in memory.get("matches", []):
                 if (match.get("source_text") == source_text and match.get("target_text") == target_text
                         and match.get("information_source") == "manual" and not match.get("source_name")):
-                    return {"status": "already_saved", "entry": match}
+                    return {"status": "already_saved", "entry": context_content(match)}
 
         existing = await existing_pair()
         if existing:
             return existing
         try:
-            return await client.add_tm_entry(source_text, target_text, source_language_code=source_language_code, target_language_code=target_language_code)
+            entry = await client.add_tm_entry(source_text, target_text, source_language_code=source_language_code, target_language_code=target_language_code)
+            return {"status": "saved", "tm_id": entry.get("id"), "entry": context_content(entry)}
         except httpx.HTTPStatusError as error:
             # The API rejects duplicate inserts. Another request may have saved
             # the same pair after our lookup; report success only if it exists.

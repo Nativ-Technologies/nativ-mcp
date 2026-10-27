@@ -88,6 +88,22 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn('X-API-Key',observed[0])
         self.assertIsNone(hosted_request.get())
 
+    async def test_context_and_saved_results_omit_unneeded_account_and_audit_fields(self):
+        client=AsyncMock()
+        client.get_languages.return_value={'languages':[{'id':1,'user_id':42,'language':'French','language_code':'fr'}]}
+        client.get_brand_prompt.return_value={'user_id':42,'prompt':'Keep Field Notes unchanged','updated_at':'timestamp'}
+        client.list_style_guides.return_value=[{'id':2,'title':'Field Notes','content':'Warm tone','created_at':'timestamp'}]
+        client.search_tm.return_value={'matches':[]}
+        client.add_tm_entry.return_value={'id':'entry-1','user_id':42,'end_user_id':7,'created_at':'timestamp','source_text':'Hello','target_text':'Bonjour'}
+        with patch('nativ_mcp.chatgpt._get_client',return_value=client):
+            _,data=await self.rpc('tools/call',{'name':'get_localization_context','arguments':{}})
+            context=data['result']['structuredContent']
+            self.assertEqual(context['languages']['languages'],[{'language':'French','language_code':'fr'}])
+            self.assertEqual(context['brand_voice'],{'prompt':'Keep Field Notes unchanged'})
+            self.assertEqual(context['style_guides'],[{'title':'Field Notes','content':'Warm tone'}])
+            _,data=await self.rpc('tools/call',{'name':'save_approved_translation','arguments':{'source_text':'Hello','target_text':'Bonjour','source_language_code':'en','target_language_code':'fr','approved':True}})
+            self.assertEqual(data['result']['structuredContent'],{'status':'saved','tm_id':'entry-1','entry':{'source_text':'Hello','target_text':'Bonjour'}})
+
     async def test_missing_approval_and_invalid_image_never_call_api(self):
         client=AsyncMock()
         with patch('nativ_mcp.chatgpt._get_client',return_value=client):
