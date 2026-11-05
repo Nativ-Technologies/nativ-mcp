@@ -28,8 +28,28 @@ Use an MCP client that supports a remote Streamable HTTP URL and custom headers:
 
 `Authorization: Bearer nativ_your_api_key_here` is also accepted when a client
 supports manually configured bearer credentials. Supply only one credential
-header. OAuth discovery and interactive sign-in are not implemented; clients
-requiring those flows need additional authentication support.
+header. OAuth discovery and interactive sign-in are not implemented on this full-server
+endpoint. The separate focused OAuth connection below has a different catalogue.
+
+### Authentication boundaries
+
+| Connection | Authentication | Catalogue |
+| --- | --- | --- |
+| Local stdio | `NATIV_API_KEY` in the server environment | Full 51 tools |
+| Hosted `/mcp` | `X-API-Key` or manually configured bearer credential | Full 51 tools |
+| JSON `/tools/{tool_name}` | Nativ API key | Full 51 tools; native JSON adapter bodies |
+| `/chatgpt/mcp` | Resource-bound OAuth sign-in | Seven focused copy, image, context and memory tools |
+
+For the focused connection, the exact protected resource is
+`https://mcp.usenativ.com/chatgpt/mcp`, with scope `nativ:localize` and S256 PKCE.
+It does not accept a manually supplied Nativ API key. Custom ChatGPT connection
+availability depends on workspace policy and compatible callbacks; public
+plugin-directory approval is a separate publication state. The existing public
+custom GPT uses its own GPT Actions connection, not the full MCP catalogue.
+
+Read [the usage guide](using-nativ.md) before applying assumptions from one
+connection to another. [ChatGPT plugin maintenance](chatgpt-plugin.md) describes
+the focused connection’s release and permission boundaries.
 
 For REST connector builders, `/openapi.json` serves a focused OpenAPI 3.1 schema
 for the localization API, including its `X-API-Key` security scheme and

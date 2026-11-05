@@ -117,6 +117,29 @@ Ask your AI assistant things like:
 - *"Localize these i18n strings to all configured languages"*
 - *"Review this German translation against our TM and brand voice"*
 
+## Workflow reference
+
+The full server has **51 tools** in version 0.5.0. Use the
+[complete capability reference](docs/capabilities.md) for tool names and the
+[usage and output guide](docs/using-nativ.md) for context, files, review and export.
+The table below is a selection, not the complete catalogue.
+
+- Text: inspect workspace guidance, search memory, translate, then save approved pairs separately.
+- Images: extract wording, review replacements, render a candidate image. The output remains raster artwork.
+- Audio/video: inspect capabilities and voices, transcribe, translate related turns, review, then synthesize. Dubbing does not automatically translate the visible picture.
+- Saved subtitles: read review rows, save edits and regenerate the final export. A QC workbook is a different deliverable.
+- Custom integrations: use local/hosted MCP or the JSON adapter; the REST API and SDKs have their own request contracts.
+
+### ChatGPT is a separate connection
+
+The full `https://mcp.usenativ.com/mcp` endpoint uses a Nativ API key and the
+51-tool catalogue. The focused `https://mcp.usenativ.com/chatgpt/mcp` endpoint
+uses OAuth and seven copy/image/context/memory tools. It does not accept a
+manually supplied Nativ API key or expose the full audio, subtitle and
+administration catalogue. A working endpoint is not evidence of public
+plugin-directory approval. The existing custom GPT is another distinct surface.
+See [authentication boundaries](docs/hosting.md#authentication-boundaries).
+
 ## Tools
 
 | Tool | Description |
@@ -271,7 +294,7 @@ The MCP server runs locally via stdio. It authenticates with your API key and ca
 
 ```bash
 # Clone the repo
-git clone https://github.com/nativ-ai/nativ-mcp.git
+git clone https://github.com/Nativ-Technologies/nativ-mcp.git
 cd nativ-mcp
 
 # Set up environment
@@ -295,4 +318,4 @@ MIT — see [LICENSE](LICENSE).
 - [Nativ Platform](https://usenativ.com)
 - [Nativ Dashboard](https://dashboard.usenativ.com)
 - [MCP Protocol](https://modelcontextprotocol.io)
-- [Report Issues](https://github.com/nativ-ai/nativ-mcp/issues)
+- [Report Issues](https://github.com/Nativ-Technologies/nativ-mcp/issues)
