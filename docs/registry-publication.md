@@ -34,3 +34,7 @@ References checked 9 November 2026:
 - https://modelcontextprotocol.io/registry/authentication
 - https://modelcontextprotocol.io/registry/package-types
 - https://github.com/modelcontextprotocol/registry/releases/tag/v1.8.8
+
+## Listing enrichment
+
+Registry metadata 0.5.1 adds Nativ’s display title, the existing public 180px brand icon and the MCP setup page. It still points to the verified Python 0.5.0 package. Registry metadata and package releases are independently versioned; this update does not change customer installs, credentials or the running service. The npm wrapper is added only after a new package with the matching `mcpName` ownership marker is actually published and verified.

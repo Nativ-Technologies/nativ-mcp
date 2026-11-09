@@ -6,7 +6,7 @@
     "url": "https://github.com/Nativ-Technologies/nativ-mcp",
     "source": "github"
   },
-  "version": "0.5.0",
+  "version": "0.5.1",
   "packages": [
     {
       "registryType": "pypi",
@@ -44,6 +44,17 @@
           "isRequired": true,
           "isSecret": true
         }
+      ]
+    }
+  ],
+  "title": "Nativ",
+  "websiteUrl": "https://www.usenativ.com/integrations/mcp/",
+  "icons": [
+    {
+      "src": "https://www.usenativ.com/apple-touch-icon.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "180x180"
       ]
     }
   ]
