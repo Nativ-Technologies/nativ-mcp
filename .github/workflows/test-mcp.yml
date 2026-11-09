@@ -1,0 +1,39 @@
+name: MCP compatibility and authentication checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths:
+      - src/**
+      - tests/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/test-mcp.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        python: ['3.10', '3.11']
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install pinned package runner
+        run: python -m pip install uv==0.10.4
+      - name: Install locked dependencies
+        run: uv sync --frozen --extra hosted --python '${{ matrix.python }}'
+      - name: Test protocol, authentication and outputs without customer credentials
+        run: uv run --frozen --extra hosted python -m unittest discover -s tests
+      - name: Build Python distribution
+        run: uv build

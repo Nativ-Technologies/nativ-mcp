@@ -23,12 +23,14 @@ from nativ_mcp.json_api import routes as json_routes
 
 
 class APIKeyMiddleware:
-    def __init__(self, app: Any, client: httpx.AsyncClient, artifact_store: Any, security: TransportSecuritySettings):
+    def __init__(self, app: Any, client: httpx.AsyncClient, artifact_store: Any, security: TransportSecuritySettings, discovery_app: Any = None):
         self.app = app
         self.client = client
         self.artifact_store = artifact_store
         self.security = TransportSecurityMiddleware(security)
         self.slots = asyncio.Semaphore(4)
+        self.discovery_app = discovery_app
+        self.discovery_slots = asyncio.Semaphore(1)
 
     async def __call__(self, scope: dict, receive: Any, send: Any) -> None:
         if scope["type"] != "http":
@@ -51,6 +53,18 @@ class APIKeyMiddleware:
             response = JSONResponse({"error": "Supply one API key using X-API-Key or Authorization: Bearer."}, status_code=400)
             await response(scope, receive, send)
             return
+        if not keys and not authorization and self.discovery_app is not None:
+            from nativ_mcp.discovery import dispatch_discovery
+            try:
+                await asyncio.wait_for(self.discovery_slots.acquire(), timeout=0.1)
+            except asyncio.TimeoutError:
+                await JSONResponse({"error": "Discovery is busy. Retry shortly."}, status_code=429, headers={"Retry-After": "2"})(scope, receive, send)
+                return
+            try:
+                if await dispatch_discovery(self.discovery_app, scope, receive, send):
+                    return
+            finally:
+                self.discovery_slots.release()
         api_key = keys[0].strip() if keys else ""
         if authorization:
             scheme, _, value = authorization[0].partition(" ")
@@ -123,11 +137,13 @@ def create_app(*, artifact_store: Any = None, api_transport: httpx.AsyncBaseTran
     for path in ("/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/chatgpt/mcp"):
         app.routes.insert(0, Route(path, protected_resource))
     app.routes.insert(0, Route("/.well-known/openai-apps-challenge", domain_challenge))
+    from nativ_mcp.discovery import create_discovery_app
+    discovery = create_discovery_app(mcp, security)
     original_lifespan = app.router.lifespan_context
 
     @asynccontextmanager
     async def lifespan(application):
-        async with api_client, original_lifespan(application), plugin.router.lifespan_context(plugin):
+        async with api_client, original_lifespan(application), plugin.router.lifespan_context(plugin), discovery.router.lifespan_context(discovery):
             yield
 
     app.router.lifespan_context = lifespan
@@ -143,7 +159,7 @@ def create_app(*, artifact_store: Any = None, api_transport: httpx.AsyncBaseTran
     # New routes reuse the existing tools without changing the MCP wire
     # protocol or the REST API schema already shared with customers.
     app.routes[:0] = json_routes(mcp, public_url.removesuffix("/mcp").rstrip("/"))
-    app.add_middleware(APIKeyMiddleware, client=api_client, artifact_store=artifact_store, security=security)
+    app.add_middleware(APIKeyMiddleware, client=api_client, artifact_store=artifact_store, security=security, discovery_app=discovery)
     if origins:
         app.add_middleware(
             CORSMiddleware, allow_origins=origins, allow_methods=["GET", "POST", "DELETE"],

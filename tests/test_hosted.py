@@ -75,13 +75,138 @@ class HostedTests(unittest.IsolatedAsyncioTestCase):
         schema = (await self.http.get("/openapi.json")).json()
         self.assertEqual(schema["servers"][0]["url"], "https://api.usenativ.com")
         self.assertEqual(schema["components"]["securitySchemes"]["NativAPIKey"]["name"], "X-API-Key")
-        for key, status in (("", 401), ("nativ_bad", 401), ("nativ_unavailable", 503)):
+        for key, status in (("nativ_bad", 401), ("nativ_unavailable", 503)):
             with self.subTest(key=key):
                 response = await self.rpc("tools/list", key=key)
                 self.assertEqual(response.status_code, status)
         with patch.dict(os.environ, {"NATIV_API_KEY": "nativ_alice"}):
             self.assertEqual((await self.http.post("/mcp", json={})).status_code, 401)
         self.assertIsNone(hosted_request.get())
+
+    async def test_public_catalogue_has_no_account_reads_or_executable_calls(self):
+        headers = {"Accept": "application/json, text/event-stream", "MCP-Protocol-Version": "2025-11-25"}
+        for method, params in (
+            ("initialize", {"protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "indexer", "version": "1"}}),
+            ("ping", {}), ("tools/list", {}),
+        ):
+            response = await self.http.post("/mcp", headers=headers, json={"jsonrpc": "2.0", "id": 10, "method": method, "params": params})
+            self.assertEqual(response.status_code, 200, response.text)
+            if method == "tools/list":
+                public_tools = response.json()["result"]["tools"]
+                expected = [tool.model_dump(by_alias=True, exclude_none=True) for tool in await mcp.list_tools()]
+                self.assertEqual(public_tools, expected)
+                self.assertEqual(len(public_tools), 51)
+            if method == "initialize":
+                capabilities = response.json()["result"]["capabilities"]
+                self.assertNotIn("resources", capabilities)
+                self.assertNotIn("prompts", capabilities)
+            self.assertNotIn("mcp-session-id", response.headers)
+        self.assertEqual(self.verified_keys, [])
+        self.assertEqual(self.store.files, [])
+        self.assertIsNone(hosted_request.get())
+        response = await self.http.post("/mcp", headers=headers, json={"jsonrpc": "2.0", "method": "notifications/initialized"})
+        self.assertEqual(response.status_code, 202, response.text)
+
+    async def test_public_discovery_cannot_execute_or_read_private_resources(self):
+        headers = {"Accept": "application/json, text/event-stream", "Mcp-Method": "tools/list"}
+        with patch.dict(os.environ, {"NATIV_API_KEY": "nativ_alice"}), patch("nativ_mcp.client.NativClient.get_languages", AsyncMock(side_effect=AssertionError("Anonymous execution"))) as upstream:
+            for method, params in (
+                ("tools/call", {"name": "get_languages", "arguments": {}}),
+                ("tools/call", {"name": "translate", "arguments": {"text": "fictional", "target_language": "French"}}),
+                ("resources/read", {"uri": "nativ://languages"}),
+                ("resources/list", {}), ("prompts/list", {}), ("prompts/get", {"name": "localize"}),
+                ("notifications/cancelled", {}), ("subscriptions/listen", {}),
+            ):
+                with self.subTest(method=method):
+                    response = await self.http.post("/mcp", headers=headers, json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params})
+                    self.assertEqual(response.status_code, 401, response.text)
+            upstream.assert_not_awaited()
+        for path in ("/tools/get_languages", "/tools/translate", "/chatgpt/mcp"):
+            response = await self.http.post(path, headers=headers, json={})
+            self.assertEqual(response.status_code, 401, response.text)
+        self.assertEqual((await self.http.get("/mcp")).status_code, 401)
+        self.assertEqual((await self.http.delete("/mcp")).status_code, 401)
+        self.assertEqual(self.verified_keys, [])
+        self.assertEqual(self.store.files, [])
+
+    async def test_public_discovery_rejects_smuggling_invalid_keys_and_oversized_input(self):
+        headers = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream"}
+        for body, status in (
+            ('[{"jsonrpc":"2.0","id":1,"method":"tools/list"},{"jsonrpc":"2.0","id":2,"method":"tools/call"}]', 401),
+            ('{"jsonrpc":"2.0","id":1,"method":"tools/list","method":"tools/call"}', 400),
+            ('{"jsonrpc":"2.0","id":1,"method":{}}', 401),
+            ('{"jsonrpc":"2.0","id":1,"method":[]}', 401),
+            ('{"jsonrpc":"2.0","id":1,"method":"TOOLS/LIST"}', 401),
+            ('not json', 400), ('{"method":"tools/list","padding":"' + 'x' * 65536 + '"}', 413),
+        ):
+            with self.subTest(status=status):
+                response = await self.http.post("/mcp", headers=headers, content=body)
+                self.assertEqual(response.status_code, status, response.text)
+        for credential in ({"X-API-Key": ""}, {"X-API-Key": "nativ_bad"}, {"Authorization": "Bearer nativ_bad"}, {"Authorization": "Basic invalid"}):
+            response = await self.http.post("/mcp", headers={**headers, **credential}, json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+            self.assertEqual(response.status_code, 401, response.text)
+        for extra, status in (({"Host": "attacker.example"}, 421), ({"Origin": "https://attacker.example"}, 403)):
+            response = await self.http.post("/mcp", headers={**headers, **extra}, json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+            self.assertEqual(response.status_code, status, response.text)
+
+    async def test_current_sdk_can_discover_anonymously_but_cannot_call_tools(self):
+        import httpx2
+        from mcp import Client
+        from mcp.client.streamable_http import streamable_http_client
+        async with httpx2.AsyncClient(transport=httpx2.ASGITransport(app=self.app)) as http_client:
+            async with Client(streamable_http_client("http://localhost:8080/mcp", http_client=http_client)) as client:
+                self.assertEqual(len((await client.list_tools()).tools), 51)
+                with patch("nativ_mcp.client.NativClient.get_languages", AsyncMock(side_effect=AssertionError("Anonymous call reached backend"))) as upstream:
+                    with self.assertRaises(Exception):
+                        await client.call_tool("get_languages", {})
+                    upstream.assert_not_awaited()
+
+    async def test_busy_public_discovery_does_not_take_authenticated_execution_slots(self):
+        entered, release = asyncio.Event(), asyncio.Event()
+        original_list = mcp.list_tools
+        async def delayed_catalogue():
+            entered.set()
+            await release.wait()
+            return await original_list()
+        headers = {"Accept": "application/json, text/event-stream"}
+        with patch.object(mcp, "list_tools", delayed_catalogue):
+            first = asyncio.create_task(self.http.post("/mcp", headers=headers, json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"}))
+            await asyncio.wait_for(entered.wait(), timeout=2)
+            try:
+                second = await self.http.post("/mcp", headers=headers, json={"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
+                self.assertEqual(second.status_code, 429)
+                with patch("nativ_mcp.client.NativClient.get_languages", AsyncMock(return_value={"languages": []})) as upstream:
+                    private = await self.rpc("tools/call", {"name": "get_languages", "arguments": {}})
+                    self.assertEqual(private.status_code, 200, private.text)
+                    upstream.assert_awaited_once()
+            finally:
+                release.set()
+                self.assertEqual((await first).status_code, 200)
+
+    async def test_discovery_server_has_no_execution_handler_even_without_outer_gate(self):
+        from nativ_mcp.discovery import create_discovery_app
+        from mcp.server.transport_security import TransportSecuritySettings
+        app = create_discovery_app(mcp, TransportSecuritySettings(allowed_hosts=["localhost:8080"]))
+        async with app.router.lifespan_context(app):
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://localhost:8080") as client:
+                with patch("nativ_mcp.client.NativClient.get_languages", AsyncMock(side_effect=AssertionError("Public server executed a tool"))) as upstream:
+                    response = await client.post("/mcp", headers={"Accept": "application/json, text/event-stream"}, json={"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "get_languages", "arguments": {}}})
+                    self.assertIn("error", response.json())
+                    self.assertEqual(response.json()["error"]["code"], -32601)
+                    upstream.assert_not_awaited()
+
+    async def test_public_discovery_request_read_has_a_deadline(self):
+        from nativ_mcp.discovery import dispatch_discovery
+        scope = {"type": "http", "method": "POST", "path": "/mcp", "headers": [(b"content-type", b"application/json")], "scheme": "http", "server": ("localhost", 8080), "query_string": b""}
+        async def receive():
+            await asyncio.Event().wait()
+        sent = []
+        async def send(message):
+            sent.append(message)
+        app = AsyncMock(side_effect=AssertionError("Timed out input was dispatched"))
+        self.assertTrue(await dispatch_discovery(app, scope, receive, send))
+        self.assertEqual(sent[0]["status"], 408)
+        app.assert_not_awaited()
 
     async def test_discovery_and_bearer_api_key(self):
         response = await self.rpc("initialize", {

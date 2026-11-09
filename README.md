@@ -119,7 +119,7 @@ Ask your AI assistant things like:
 
 ## Workflow reference
 
-The full server has **51 tools** in version 0.5.0. Use the
+The full server has **51 tools** in version 0.5.1. Use the
 [complete capability reference](docs/capabilities.md) for tool names and the
 [usage and output guide](docs/using-nativ.md) for context, files, review and export.
 The table below is a selection, not the complete catalogue.

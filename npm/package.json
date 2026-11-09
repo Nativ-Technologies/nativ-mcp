@@ -1,6 +1,6 @@
 {
   "name": "nativ-mcp",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "MCP server for Nativ \u2014 AI-powered localization platform. Translate text, manage translation memory, and access style guides from any MCP-compatible AI tool.",
   "keywords": [
     "mcp",
@@ -28,5 +28,6 @@
   ],
   "engines": {
     "node": ">=16"
-  }
+  },
+  "mcpName": "io.github.Nativ-Technologies/nativ"
 }

@@ -5,7 +5,7 @@ over Streamable HTTP with SSE responses. Clients that request progress receive
 an update every 15 seconds while a tool is running. Updates count elapsed
 seconds without claiming a completion percentage. This keeps supporting
 clients' idle timers active without changing model reasoning or tool results.
-It validates the caller's Nativ API key on every request
+Authenticated requests validate the caller's Nativ API key on every request
 and forwards that caller's key to the REST API. It never uses `NATIV_API_KEY`
 from the server environment for hosted calls.
 
@@ -30,6 +30,12 @@ Use an MCP client that supports a remote Streamable HTTP URL and custom headers:
 supports manually configured bearer credentials. Supply only one credential
 header. OAuth discovery and interactive sign-in are not implemented on this full-server
 endpoint. The separate focused OAuth connection below has a different catalogue.
+
+### Public capability discovery
+
+Without credentials, `POST /mcp` supports only `initialize`, `ping`, `notifications/initialized` and `tools/list`. These use a separate SDK server with static public tool descriptions and schemas, without executable tool, resource or prompt handlers. They do not contact Nativ’s customer API, consume credits or return workspace content. The catalogue matches the executable server, but executing any listed tool still requires a valid API key. An invalid or revoked credential is rejected rather than silently falling back to anonymous access.
+
+All tool calls, workspace resources, prompts, JSON adapters, generated output routes and the focused ChatGPT connection retain their existing authentication. Anonymous batches and unknown methods are rejected. Discovery retains host/origin checks, limits request bodies to 64 KiB with a five-second read deadline, and has a separate one-request concurrency slot so it does not consume the four authenticated execution slots. The full server remains stateless and its authenticated SSE/progress behaviour is unchanged.
 
 ### Authentication boundaries
 
