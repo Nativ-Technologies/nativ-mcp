@@ -11,6 +11,7 @@ from pathlib import Path
 from urllib.parse import unquote
 
 import httpx
+from mcp.server.mcpserver.exceptions import ToolError
 
 from nativ_mcp.runtime import hosted_request
 
@@ -22,7 +23,7 @@ async def _public_address(host: str, port: int) -> str:
             timeout=10,
         )
     except (OSError, asyncio.TimeoutError) as exc:
-        raise RuntimeError("Unable to resolve the media URL.") from exc
+        raise ToolError("Unable to resolve the media URL.") from exc
     ips = [ipaddress.ip_address(record[4][0]) for record in addresses]
     # Reject the entire hostname if any answer is private (including metadata,
     # loopback and IPv4-mapped IPv6), then pin the connection to a checked IP.
@@ -35,7 +36,7 @@ async def _public_address(host: str, port: int) -> str:
             )
         ) for ip in ips
     ):
-        raise RuntimeError("Media URLs must resolve only to public IP addresses.")
+        raise ToolError("Media URLs must resolve only to public IP addresses.")
     return str(ips[0])
 
 
@@ -43,7 +44,7 @@ async def download_media(url: str, max_bytes: int) -> tuple[bytes, str, str]:
     try:
         return await asyncio.wait_for(_download_media(url, max_bytes), timeout=120)
     except asyncio.TimeoutError as exc:
-        raise RuntimeError("Media download timed out.") from exc
+        raise ToolError("Media download timed out.") from exc
 
 
 async def _download_media(url: str, max_bytes: int) -> tuple[bytes, str, str]:
@@ -52,9 +53,9 @@ async def _download_media(url: str, max_bytes: int) -> tuple[bytes, str, str]:
             try:
                 target = httpx.URL(url)
             except httpx.InvalidURL as exc:
-                raise RuntimeError("Provide a valid public HTTPS media URL.") from exc
+                raise ToolError("Provide a valid public HTTPS media URL.") from exc
             if target.scheme != "https" or not target.host or target.userinfo or target.port not in (None, 443):
-                raise RuntimeError("Provide a public HTTPS media URL on port 443, without embedded credentials.")
+                raise ToolError("Provide a public HTTPS media URL on port 443, without embedded credentials.")
             address = await _public_address(target.host, 443)
             request = client.build_request(
                 "GET", target.copy_with(host=address), headers={"Host": target.netloc.decode("ascii")},
@@ -68,17 +69,17 @@ async def _download_media(url: str, max_bytes: int) -> tuple[bytes, str, str]:
                     if response.status_code in (301, 302, 303, 307, 308):
                         location = response.headers.get("location")
                         if not location:
-                            raise RuntimeError("Media URL redirected without a destination.")
+                            raise ToolError("Media URL redirected without a destination.")
                         url = str(target.join(location))
                         continue
                     response.raise_for_status()
                     length = response.headers.get("content-length", "")
                     if length.isdigit() and int(length) > max_bytes:
-                        raise RuntimeError("Media file exceeds the hosted upload size limit.")
+                        raise ToolError("Media file exceeds the hosted upload size limit.")
                     data = bytearray()
                     async for chunk in response.aiter_bytes():
                         if len(data) + len(chunk) > max_bytes:
-                            raise RuntimeError("Media file exceeds the hosted upload size limit.")
+                            raise ToolError("Media file exceeds the hosted upload size limit.")
                         data.extend(chunk)
                     filename = Path(unquote(target.path)).name or "media"
                     mime = response.headers.get("content-type", "").split(";", 1)[0].strip()
@@ -91,8 +92,8 @@ async def _download_media(url: str, max_bytes: int) -> tuple[bytes, str, str]:
                     await response.aclose()
             except httpx.HTTPError as exc:
                 # Exceptions can contain signed URL credentials: never echo them.
-                raise RuntimeError("Unable to download media from the supplied URL.") from exc
-    raise RuntimeError("Media URL exceeded the redirect limit.")
+                raise ToolError("Unable to download media from the supplied URL.") from exc
+    raise ToolError("Media URL exceeded the redirect limit.")
 
 
 async def read_file(path: str) -> tuple[bytes, str, str]:
@@ -101,7 +102,7 @@ async def read_file(path: str) -> tuple[bytes, str, str]:
         return await download_media(path, remote.max_media_bytes)
     expanded = Path(path).expanduser()
     if not expanded.is_file():
-        raise RuntimeError(f"File not found: {path}")
+        raise ToolError(f"File not found: {path}")
     mime = mimetypes.guess_type(expanded.name)[0] or "application/octet-stream"
     if expanded.suffix.lower() == ".itt":
         mime = "application/xml"
@@ -113,7 +114,7 @@ async def read_image(path: str) -> tuple[bytes, str, str]:
     supported = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}
     image_type = supported.get(Path(filename).suffix.lower())
     if image_type is None:
-        raise RuntimeError("Unsupported image type. Supported: PNG, JPEG, WebP.")
+        raise ToolError("Unsupported image type. Supported: PNG, JPEG, WebP.")
     return data, filename, image_type
 
 

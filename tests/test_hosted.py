@@ -9,6 +9,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
+from mcp.server.mcpserver.exceptions import ToolError
 
 from nativ_mcp.files import download_media, read_file, save_base64
 from nativ_mcp.hosted import create_app
@@ -413,10 +414,10 @@ class FileTests(unittest.IsolatedAsyncioTestCase):
 
         for address in ("127.0.0.1", "10.0.0.1", "169.254.169.254", "::1", "::ffff:127.0.0.1"):
             with patch("asyncio.BaseEventLoop.getaddrinfo", AsyncMock(return_value=[(socket.AF_INET, socket.SOCK_STREAM, 0, "", (address, 443))])):
-                with self.assertRaisesRegex(RuntimeError, "public IP"):
+                with self.assertRaisesRegex(ToolError, "public IP"):
                     await _public_address("cdn.example.com", 443)
         for url in ("/etc/passwd", "file:///etc/passwd", "http://cdn.example.com/file", "https://user:pass@cdn.example.com/file", "https://cdn.example.com:8443/file"):
-            with self.assertRaisesRegex(RuntimeError, "HTTPS"):
+            with self.assertRaisesRegex(ToolError, "HTTPS"):
                 await download_media(url, 100)
 
     async def test_redirects_revalidated_and_size_limit_streamed(self):
@@ -430,9 +431,9 @@ class FileTests(unittest.IsolatedAsyncioTestCase):
         with patch("nativ_mcp.files._public_address", AsyncMock(return_value="8.8.8.8")), patch(
             "nativ_mcp.files.httpx.AsyncClient", side_effect=lambda **kwargs: original_client(transport=httpx.MockTransport(serve), **kwargs),
         ):
-            with self.assertRaisesRegex(RuntimeError, "HTTPS"):
+            with self.assertRaisesRegex(ToolError, "HTTPS"):
                 await download_media("https://cdn.example.com/redirect", 100)
-            with self.assertRaisesRegex(RuntimeError, "size limit"):
+            with self.assertRaisesRegex(ToolError, "size limit"):
                 await download_media("https://cdn.example.com/file", 2)
 
 

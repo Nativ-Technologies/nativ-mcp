@@ -9,6 +9,7 @@ on:
       - tests/**
       - pyproject.toml
       - uv.lock
+      - requirements-hosted.txt
       - .github/workflows/test-mcp.yml
   workflow_dispatch:
 
@@ -37,3 +38,6 @@ jobs:
         run: uv run --frozen --extra hosted python -m unittest discover -s tests
       - name: Build Python distribution
         run: uv build
+      - name: Audit the exact hosted dependency pins
+        if: matrix.python == '3.11'
+        run: uvx --from pip-audit==2.10.1 pip-audit --disable-pip --require-hashes -r requirements-hosted.txt

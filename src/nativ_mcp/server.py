@@ -14,6 +14,7 @@ import asyncio
 import time
 import uuid
 import httpx
+from mcp.server.mcpserver.exceptions import ToolError
 from urllib.parse import urlparse
 from typing import Any
 
@@ -40,7 +41,7 @@ def _get_client() -> NativClient:
     remote = hosted_request.get()
     api_key = remote.api_key if remote is not None else os.environ.get("NATIV_API_KEY")
     if not api_key:
-        raise RuntimeError(
+        raise ToolError(
             "NATIV_API_KEY environment variable is required. "
             "Create one at https://dashboard.usenativ.com → Settings → API Keys"
         )
@@ -183,15 +184,15 @@ async def translate_batch(
         ), timeout=_BATCH_DEADLINE_SECONDS)
     except asyncio.TimeoutError as exc:
         logger.warning("event=mcp_batch_timeout batch_id=%s elapsed_s=%.3f", batch_id, time.monotonic() - started)
-        raise RuntimeError("Batch translation exceeded its 240-second deadline. No complete batch was returned; split the input before trying again.") from exc
+        raise ToolError("Batch translation exceeded its 240-second deadline. No complete batch was returned; split the input before trying again.") from exc
     except Exception as exc:
         logger.warning("event=mcp_batch_failed batch_id=%s error_type=%s elapsed_s=%.3f", batch_id, type(exc).__name__, time.monotonic() - started)
         if isinstance(exc, httpx.TimeoutException):
-            raise RuntimeError("Nativ timed out during batch translation. No complete batch was returned.") from exc
+            raise ToolError("Nativ timed out during batch translation. No complete batch was returned.") from exc
         if isinstance(exc, httpx.HTTPStatusError):
             status = exc.response.status_code
             reason = " The backend translation deadline was exceeded." if status == 504 else ""
-            raise RuntimeError(f"Nativ batch translation failed (HTTP {status}).{reason} No complete batch was returned.") from exc
+            raise ToolError(f"Nativ batch translation failed (HTTP {status}).{reason} No complete batch was returned.") from exc
         raise
     logger.info("event=mcp_batch_complete batch_id=%s items=%s elapsed_s=%.3f", batch_id, len(texts), time.monotonic() - started)
     results = []

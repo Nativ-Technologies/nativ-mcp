@@ -238,3 +238,19 @@ Refresh the bundled REST schema after changing backend API contracts:
 curl --fail https://api.usenativ.com/openapi.json -o /tmp/nativ-openapi.json
 python scripts/export_openapi.py /tmp/nativ-openapi.json
 ```
+
+## Dependency and protocol checks
+
+The hosted image installs the hashed `requirements-hosted.txt`, exported from
+`uv.lock`. Release 0.5.2 raises the SDK floor to MCP 2.2 and updates the affected
+certificate, HTTP transport, JWT, ASN.1 and telemetry dependencies. The service
+remains stateless, so the SDK's new stateful idle-session expiry does not apply.
+Expected media-validation and batch-timeout failures use deliberate `ToolError`
+messages. Unexpected exceptions retain the SDK's generic client-facing error;
+raw exception text and signed URLs are not exposed to callers.
+
+CI tests Python 3.10 and 3.11, including credential isolation, revoked keys,
+anonymous metadata versus execution, HTTP/SSE compatibility and media URL
+restrictions. It also audits the exact hashed hosted pins with pip-audit.
+A clean dependency audit describes known advisories at check time, not a promise
+that the service has no vulnerabilities.

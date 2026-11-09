@@ -1,6 +1,6 @@
 [project]
 name = "nativ-mcp"
-version = "0.5.1"
+version = "0.5.2"
 description = "MCP server for Nativ — AI-powered localization platform. Translate text, manage translation memory, and access style guides from any MCP-compatible AI tool."
 readme = "README.md"
 license = { text = "MIT" }
@@ -31,7 +31,7 @@ classifiers = [
     "Topic :: Software Development :: Localization",
 ]
 dependencies = [
-    "mcp>=2.0.0,<3",
+    "mcp>=2.2.0,<3",
     "httpx>=0.27.0",
 ]
 

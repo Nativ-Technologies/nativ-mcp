@@ -30,7 +30,7 @@ def create_discovery_app(catalog, security):
 
     # No call_tool, resource, prompt or account handlers exist on this server.
     server = Server(
-        "nativ", version="0.5.1", title="Nativ",
+        "nativ", version="0.5.2", title="Nativ",
         website_url="https://www.usenativ.com/integrations/mcp/",
         icons=[Icon(src="https://www.usenativ.com/apple-touch-icon.png", mime_type="image/png", sizes=["180x180"])],
         instructions="Inspect Nativ's public localisation capabilities. Executing any tool requires a Nativ API key. Connect at https://www.usenativ.com/integrations/mcp/.",
