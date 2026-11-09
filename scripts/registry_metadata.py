@@ -22,7 +22,8 @@ def expected_fields_match(expected, actual):
     """Allow registry-added fields while preserving every published input field."""
     if isinstance(expected, dict):
         return isinstance(actual, dict) and all(
-            k in actual and expected_fields_match(v, actual[k])
+            (k not in actual and k in ("isRequired", "isSecret") and v is False)
+            or (k in actual and expected_fields_match(v, actual[k]))
             for k, v in expected.items() if k != "$schema"
         )
     if isinstance(expected, list):

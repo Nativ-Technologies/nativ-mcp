@@ -21,6 +21,13 @@ class RegistryPublicationGuards(unittest.TestCase):
         with self.assertRaises(ValueError):
             registry.needs_publication(self.server, changed)
 
+    def test_registry_can_omit_only_default_false_optional_flags(self):
+        expected = {"name": "NATIV_API_URL", "isRequired": False, "isSecret": False}
+        self.assertTrue(registry.expected_fields_match(expected, {"name": "NATIV_API_URL"}))
+        self.assertFalse(registry.expected_fields_match({"isRequired": True}, {}))
+        self.assertFalse(registry.expected_fields_match({"isSecret": True}, {}))
+        self.assertFalse(registry.expected_fields_match({"other": False}, {}))
+
     def test_only_a_missing_version_allows_first_publication(self):
         self.assertTrue(registry.needs_publication(self.server, None))
         with patch.object(registry, "read_json", side_effect=HTTPError("url", 404, "missing", {}, None)):
