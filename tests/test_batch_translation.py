@@ -84,6 +84,7 @@ class BatchTranslationTests(unittest.IsolatedAsyncioTestCase):
             result = await self.call(['Cue'])
         self.assertTrue(result.is_error)
         self.assertTrue(cancelled.is_set())
+        self.assertIn('240-second deadline', result.content[0].text)
 
     async def test_chunk_boundaries_keep_duplicates_and_order(self):
         texts = ['Same'] * 33

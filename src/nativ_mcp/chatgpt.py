@@ -92,7 +92,7 @@ class PluginAuthentication:
                                       headers={"WWW-Authenticate": challenge, "Cache-Control": "no-store"})(scope, receive, send)
         try:
             await asyncio.wait_for(self.slots.acquire(), timeout=0.1)
-        except TimeoutError:
+        except asyncio.TimeoutError:
             return await JSONResponse({"error": "Nativ is busy; retry shortly"}, status_code=429, headers={"Retry-After": "2"})(scope, receive, send)
         identity = hosted_request.set(HostedRequest(api_key=token, artifact_store=self.artifact_store,
                                                    authentication="oauth", identity=str(record["user_id"])))

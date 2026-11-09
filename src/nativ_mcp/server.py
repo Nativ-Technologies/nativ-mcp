@@ -181,7 +181,7 @@ async def translate_batch(
             source_language=source_language, source_language_code=source_language_code,
             context=context or None, formality=formality or None,
         ), timeout=_BATCH_DEADLINE_SECONDS)
-    except TimeoutError as exc:
+    except asyncio.TimeoutError as exc:
         logger.warning("event=mcp_batch_timeout batch_id=%s elapsed_s=%.3f", batch_id, time.monotonic() - started)
         raise RuntimeError("Batch translation exceeded its 240-second deadline. No complete batch was returned; split the input before trying again.") from exc
     except Exception as exc:
