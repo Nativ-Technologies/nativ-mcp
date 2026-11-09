@@ -1,37 +1,13 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.Nativ-Technologies/nativ",
-  "description": "AI-powered localization — translate, manage translation memory, and access style guides.",
+  "description": "Localize text, images, audio and subtitles with brand voice, memory and style guides.",
   "repository": {
     "url": "https://github.com/Nativ-Technologies/nativ-mcp",
     "source": "github"
   },
   "version": "0.5.0",
   "packages": [
-    {
-      "registryType": "npm",
-      "identifier": "nativ-mcp",
-      "version": "0.5.0",
-      "transport": {
-        "type": "stdio"
-      },
-      "environmentVariables": [
-        {
-          "name": "NATIV_API_KEY",
-          "description": "Your Nativ API key (create at https://dashboard.usenativ.com → Settings → API Keys)",
-          "isRequired": true,
-          "format": "string",
-          "isSecret": true
-        },
-        {
-          "name": "NATIV_API_URL",
-          "description": "Optional custom API URL (defaults to https://api.usenativ.com)",
-          "isRequired": false,
-          "format": "string",
-          "isSecret": false
-        }
-      ]
-    },
     {
       "registryType": "pypi",
       "identifier": "nativ-mcp",
@@ -42,7 +18,7 @@
       "environmentVariables": [
         {
           "name": "NATIV_API_KEY",
-          "description": "Your Nativ API key (create at https://dashboard.usenativ.com → Settings → API Keys)",
+          "description": "Your Nativ API key (create at https://dashboard.usenativ.com \u2192 Settings \u2192 API Keys)",
           "isRequired": true,
           "format": "string",
           "isSecret": true
@@ -64,7 +40,7 @@
       "headers": [
         {
           "name": "X-API-Key",
-          "description": "Your Nativ API key from dashboard.usenativ.com → Settings → API Keys",
+          "description": "Your Nativ API key from dashboard.usenativ.com \u2192 Settings \u2192 API Keys",
           "isRequired": true,
           "isSecret": true
         }

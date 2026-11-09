@@ -1,0 +1,65 @@
+name: Publish MCP registry metadata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server.json
+      - scripts/registry_metadata.py
+      - .github/workflows/publish-mcp-registry.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: official-mcp-registry
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'Nativ-Technologies/nativ-mcp' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out released metadata
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Test publication guards
+        run: python3 -B -m unittest discover -s tests -p test_registry_metadata.py
+
+      - name: Check package ownership and existing version
+        id: metadata
+        run: python3 scripts/registry_metadata.py --github-output "$GITHUB_OUTPUT"
+
+      - name: Install verified official publisher
+        if: steps.metadata.outputs.publish == 'true'
+        env:
+          PUBLISHER_SHA256: 09f1fa70ee146b640584274a1a6b2b8a0310b05d4321fa9224e6df6a016d67f4
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/modelcontextprotocol/registry/releases/download/v1.8.8/mcp-publisher_linux_amd64.tar.gz \
+            --output "$RUNNER_TEMP/mcp-publisher.tar.gz"
+          printf '%s  %s\n' "$PUBLISHER_SHA256" "$RUNNER_TEMP/mcp-publisher.tar.gz" | sha256sum --check --status
+          tar -xzf "$RUNNER_TEMP/mcp-publisher.tar.gz" -C "$RUNNER_TEMP" mcp-publisher
+
+      - name: Validate metadata
+        if: steps.metadata.outputs.publish == 'true'
+        run: '"$RUNNER_TEMP/mcp-publisher" validate server.json'
+
+      - name: Authenticate as this repository
+        if: steps.metadata.outputs.publish == 'true'
+        run: '"$RUNNER_TEMP/mcp-publisher" login github-oidc --registry=https://registry.modelcontextprotocol.io'
+
+      - name: Publish released server metadata
+        if: steps.metadata.outputs.publish == 'true'
+        run: '"$RUNNER_TEMP/mcp-publisher" publish server.json'
+
+      - name: Verify public version and connection metadata
+        run: python3 scripts/registry_metadata.py --verify
