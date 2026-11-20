@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any
+from typing import Annotated, Any
 
 from mcp.server import MCPServer
+from pydantic import Field
 
 from nativ_mcp.runtime import hosted_request
 
@@ -32,9 +33,9 @@ def register_media_tools(
 
     @mcp.tool()
     async def transcribe_audio(
-        file_path: str,
-        source_language_code: str = "",
-        keep_background_music: bool = False,
+        file_path: Annotated[str, Field(description='Public HTTPS URL (hosted) or local path (stdio) to audio (mp3, wav, m4a, …) or video (mp4, mov, …).')],
+        source_language_code: Annotated[str, Field(description='Optional source language hint (e.g. "en").')] = "",
+        keep_background_music: Annotated[bool, Field(description='If true, split a music bed for later remix.')] = False,
     ) -> str:
         """Transcribe speech from an audio or video file (unbilled draft).
 
@@ -82,7 +83,7 @@ def register_media_tools(
         return "\n".join(lines)
 
     @mcp.tool()
-    async def parse_audio_script(file_path: str) -> str:
+    async def parse_audio_script(file_path: Annotated[str, Field(description='Input file: local filesystem path in stdio, or an accessible public HTTPS URL on the hosted server.')]) -> str:
         """Parse a script file (.txt, .docx, .pdf, .srt, .itt) instead of STT."""
         client = get_client()
         data, filename, content_type = await read_local_file(file_path)
@@ -90,7 +91,7 @@ def register_media_tools(
         return json.dumps(_omit_media(result), indent=2, ensure_ascii=False)
 
     @mcp.tool()
-    async def list_voices(language_code: str = "") -> str:
+    async def list_voices(language_code: Annotated[str, Field(description='Optional filter (e.g. "fr", "ja-JP").')] = "") -> str:
         """List TTS voices available for dubbing.
 
         Args:
@@ -109,10 +110,10 @@ def register_media_tools(
 
     @mcp.tool()
     async def preview_voice(
-        voice_id: str,
-        output_path: str = "preview.wav",
-        language_code: str = "",
-        text: str = "",
+        voice_id: Annotated[str, Field(description='Voice id from `list_voices`.')],
+        output_path: Annotated[str, Field(description='Output filename hint (hosted) or WAV path (stdio).')] = "preview.wav",
+        language_code: Annotated[str, Field(description='Optional locale.')] = "",
+        text: Annotated[str, Field(description='Optional preview line (max 200 chars).')] = "",
     ) -> str:
         """Generate a short TTS preview. Hosted mode returns a download URL.
 
@@ -136,7 +137,7 @@ def register_media_tools(
         )
 
     @mcp.tool()
-    async def get_voice_consent_script(language_code: str = "") -> str:
+    async def get_voice_consent_script(language_code: Annotated[str, Field(description='Language code, for example "en" or "fr". Leave empty to use the operation default.')] = "") -> str:
         """Get the spoken consent script required for voice cloning."""
         client = get_client()
         result = await client.get_voice_consent_script(language_code or None)
@@ -144,18 +145,18 @@ def register_media_tools(
 
     @mcp.tool()
     async def synthesize_audio(
-        language: str,
-        language_code: str,
-        voice_id: str,
-        segments: str,
-        output_path: str = "dubbed.wav",
-        keep_same_length: bool = False,
-        keep_background_music: bool = False,
-        stem_id: str = "",
-        source_duration_ms: int = 0,
-        source_transcript: str = "",
-        video_id: str = "",
-        video_output_path: str = "",
+        language: Annotated[str, Field(description='Target language name (e.g. "French").')],
+        language_code: Annotated[str, Field(description='Target language code (e.g. "fr").')],
+        voice_id: Annotated[str, Field(description='Voice id from `list_voices`.')],
+        segments: Annotated[str, Field(description='JSON array of {text, start_ms, end_ms, original?} objects.')],
+        output_path: Annotated[str, Field(description='Output filename hint (hosted) or WAV path (stdio).')] = "dubbed.wav",
+        keep_same_length: Annotated[bool, Field(description='Stretch/compress speech to source timings.')] = False,
+        keep_background_music: Annotated[bool, Field(description='Mix transcribed music bed when stem_id is set.')] = False,
+        stem_id: Annotated[str, Field(description='Optional bed stem from `transcribe_audio`.')] = "",
+        source_duration_ms: Annotated[int, Field(description='Original duration.')] = 0,
+        source_transcript: Annotated[str, Field(description='Optional original transcript.')] = "",
+        video_id: Annotated[str, Field(description='Optional id from transcribe/register to mux MP4.')] = "",
+        video_output_path: Annotated[str, Field(description='Optional path for dubbed MP4 when video_id is set.')] = "",
     ) -> str:
         """Generate billed localized TTS (and optional dubbed video). Hosted mode returns download URLs.
 
@@ -215,7 +216,7 @@ def register_media_tools(
         return "\n".join(lines)
 
     @mcp.tool()
-    async def register_video(file_path: str) -> str:
+    async def register_video(file_path: Annotated[str, Field(description='Input file: local filesystem path in stdio, or an accessible public HTTPS URL on the hosted server.')]) -> str:
         """Upload a source video for later remuxing. Returns video_id."""
         client = get_client()
         data, filename, content_type = await read_local_file(file_path)
@@ -224,9 +225,9 @@ def register_media_tools(
 
     @mcp.tool()
     async def remux_video(
-        video_id: str,
-        audio_path: str,
-        output_path: str = "dubbed.mp4",
+        video_id: Annotated[str, Field(description='Id from `register_video` or `transcribe_audio`.')],
+        audio_path: Annotated[str, Field(description='Public HTTPS audio URL (hosted) or local file path (stdio).')],
+        output_path: Annotated[str, Field(description='Output filename hint (hosted) or MP4 path (stdio).')] = "dubbed.mp4",
     ) -> str:
         """Mux a WAV file onto a previously registered video.
 
@@ -246,7 +247,7 @@ def register_media_tools(
         return f"Saved remuxed video to {out} ({result.get('video_mime_type')})"
 
     @mcp.tool()
-    async def parse_subtitle(file_path: str) -> str:
+    async def parse_subtitle(file_path: Annotated[str, Field(description='Input file: local filesystem path in stdio, or an accessible public HTTPS URL on the hosted server.')]) -> str:
         """Parse an SRT/ITT file into timed cues (no storage)."""
         client = get_client()
         data, filename, content_type = await read_local_file(file_path)
@@ -265,14 +266,14 @@ def register_media_tools(
 
     @mcp.tool()
     async def localize_subtitles(
-        target_language_codes: str,
-        subtitle_path: str = "",
-        video_path: str = "",
-        glossary_path: str = "",
-        source_language_code: str = "en",
-        context: str = "",
-        formality: str = "",
-        output_dir: str = "",
+        target_language_codes: Annotated[str, Field(description='Comma-separated codes (e.g. "fr,de,ja").')],
+        subtitle_path: Annotated[str, Field(description='Optional public HTTPS subtitle URL (hosted) or local path (stdio).')] = "",
+        video_path: Annotated[str, Field(description='Optional public HTTPS video URL (hosted) or local path (stdio) for STT.')] = "",
+        glossary_path: Annotated[str, Field(description='Optional public HTTPS glossary URL (hosted) or local path (stdio).')] = "",
+        source_language_code: Annotated[str, Field(description='Source language code.')] = "en",
+        context: Annotated[str, Field(description='Optional localization context.')] = "",
+        formality: Annotated[str, Field(description='Optional formality override.')] = "",
+        output_dir: Annotated[str, Field(description='Local output directory (stdio). Hosted mode always returns subtitle download URLs.')] = "",
     ) -> str:
         """Localize subtitles in-memory. Provide an SRT/ITT and/or a video (STT).
 

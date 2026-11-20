@@ -6,10 +6,11 @@ separate from file input paths: they must never be treated as remote URLs.
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 from urllib.parse import quote
 
 from mcp.server import MCPServer
+from pydantic import Field
 
 from nativ_mcp.files import read_file, save_base64, save_bytes
 
@@ -50,10 +51,10 @@ def _ranges(ranges: list[dict[str, int]] | None) -> None:
 def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
     @mcp.tool()
     async def clone_voice(
-        reference_path: str,
-        consent_path: str,
-        confirm_ownership: bool = False,
-        language_code: str = "",
+        reference_path: Annotated[str, Field(description='Reference speech file: local path in stdio or public HTTPS URL when hosted.')],
+        consent_path: Annotated[str, Field(description='Spoken consent recording: local path in stdio or public HTTPS URL when hosted. Required for Google voice cloning.')],
+        confirm_ownership: Annotated[bool, Field(description='True only after the user explicitly confirms ownership or the speaker’s permission to clone this voice.')] = False,
+        language_code: Annotated[str, Field(description='Language code, for example "en" or "fr". Leave empty to use the operation default.')] = "",
     ) -> dict[str, Any]:
         """Create a Google voice clone from reference speech and spoken consent.
 
@@ -79,13 +80,13 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def create_byo_voice(
-        reference_path: str,
-        confirm_ownership: bool = False,
-        name: str = "",
-        language_code: str = "",
-        clip_reference: bool = False,
-        consent_path: str = "",
-        clip_ranges: list[dict[str, int]] | None = None,
+        reference_path: Annotated[str, Field(description='Reference speech file: local path in stdio or public HTTPS URL when hosted.')],
+        confirm_ownership: Annotated[bool, Field(description='True only after the user explicitly confirms ownership or the speaker’s permission to clone this voice.')] = False,
+        name: Annotated[str, Field(description='Optional display name for the saved voice.')] = "",
+        language_code: Annotated[str, Field(description='Language code, for example "en" or "fr". Leave empty to use the operation default.')] = "",
+        clip_reference: Annotated[bool, Field(description='True selects original-speech cloning with ElevenLabs; false selects Google cloning and requires consent_path.')] = False,
+        consent_path: Annotated[str, Field(description='Spoken consent recording: local path in stdio or public HTTPS URL when hosted. Required for Google voice cloning.')] = "",
+        clip_ranges: Annotated[list[dict[str, int]] | None, Field(description='Optional speech-only ranges with integer start_ms >= 0 and end_ms > start_ms; 1–500 ranges, only with clip_reference=true.')] = None,
     ) -> dict[str, Any]:
         """Create and save a reusable voice clone in the caller's workspace.
 
@@ -127,7 +128,7 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
         )
 
     @mcp.tool(annotations={"destructiveHint": True, "idempotentHint": True})
-    async def delete_saved_voice(voice_id: str) -> dict[str, Any]:
+    async def delete_saved_voice(voice_id: Annotated[str, Field(description='Voice identifier returned by list_voices or voice creation; reuse the exact identifier.')]) -> dict[str, Any]:
         """Delete a saved cloned voice belonging to the caller, when explicitly requested."""
         return await get_client()._request(
             "DELETE", "/audio/voices/saved", params={"voice_id": voice_id}
@@ -144,11 +145,11 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def transcribe_audio_detailed(
-        file_path: str,
-        source_language_code: str = "",
-        keep_background_music: bool = False,
-        speaker_count: int = 1,
-        enterprise_long_form: bool = False,
+        file_path: Annotated[str, Field(description='Input file: local filesystem path in stdio, or an accessible public HTTPS URL on the hosted server.')],
+        source_language_code: Annotated[str, Field(description='Source language code, for example "en"; empty omits the optional language hint/filter.')] = "",
+        keep_background_music: Annotated[bool, Field(description='Whether to retain the original background music for the dubbing workflow.')] = False,
+        speaker_count: Annotated[int, Field(description='Expected number of speakers: 0 for automatic detection, or 1–8.')] = 1,
+        enterprise_long_form: Annotated[bool, Field(description='Request enterprise long-form processing only when allowed by get_audio_capabilities.')] = False,
     ) -> dict[str, Any]:
         """Transcribe audio/video with complete timed segments and speaker metadata.
 
@@ -178,12 +179,12 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def translate_dialogue(
-        segments: list[dict[str, Any]],
-        source_language: str = "English",
-        source_language_code: str = "en",
-        context: str = "",
-        formality: str = "",
-        speakers: list[dict[str, Any]] | None = None,
+        segments: Annotated[list[dict[str, Any]], Field(description='1–500 dialogue turns, each with id, text, target_language, target_language_code and optional start_ms, end_ms, speaker_id from detailed transcription.')],
+        source_language: Annotated[str, Field(description='Source language name, for example "English".')] = "English",
+        source_language_code: Annotated[str, Field(description='Source language code, for example "en"; empty omits the optional language hint/filter.')] = "en",
+        context: Annotated[str, Field(description='Optional audience, purpose and surrounding context to guide localization.')] = "",
+        formality: Annotated[str, Field(description='Formality override: very_informal, informal, neutral, formal or very_formal. Empty uses workspace defaults.')] = "",
+        speakers: Annotated[list[dict[str, Any]] | None, Field(description='Optional speaker metadata from detailed transcription, supplied alongside the dialogue turns.')] = None,
     ) -> dict[str, Any]:
         """Localize speaker turns together with shared dialogue context.
 
@@ -228,22 +229,22 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def synthesize_audio_advanced(
-        language: str,
-        language_code: str,
-        voice_id: str,
-        segments: list[dict[str, Any]],
-        output_path: str = "dubbed.wav",
-        video_output_path: str = "",
-        speaker_voices: dict[str, str] | None = None,
-        keep_same_length: bool = False,
-        keep_background_music: bool = False,
-        stem_id: str = "",
-        video_id: str = "",
-        source_duration_ms: int = 0,
-        source_transcript: str = "",
-        speech_islands: list[dict[str, int]] | None = None,
-        document_translation: bool = False,
-        enterprise_long_form: bool = False,
+        language: Annotated[str, Field(description='Target language for this operation, for example "French".')],
+        language_code: Annotated[str, Field(description='Language code, for example "en" or "fr". Leave empty to use the operation default.')],
+        voice_id: Annotated[str, Field(description='Voice identifier returned by list_voices or voice creation; reuse the exact identifier.')],
+        segments: Annotated[list[dict[str, Any]], Field(description='Non-empty array of translated segments with text, start_ms, end_ms and optional original, speaker_id, voice_id, language_code and review fields.')],
+        output_path: Annotated[str, Field(description='Output filename/path in stdio, or filename for the temporary hosted download. Use the matching file extension.')] = "dubbed.wav",
+        video_output_path: Annotated[str, Field(description='Optional output MP4 filename/path; empty derives it from the audio output filename.')] = "",
+        speaker_voices: Annotated[dict[str, str] | None, Field(description='Optional mapping from transcript speaker_id to a preset or saved voice_id.')] = None,
+        keep_same_length: Annotated[bool, Field(description='Whether synthesis should try to retain the original timing.')] = False,
+        keep_background_music: Annotated[bool, Field(description='Whether to retain the original background music for the dubbing workflow.')] = False,
+        stem_id: Annotated[str, Field(description='Background-music stem identifier returned by transcription; empty omits it.')] = "",
+        video_id: Annotated[str, Field(description='Video identifier returned by registration/transcription; empty omits video assembly.')] = "",
+        source_duration_ms: Annotated[int, Field(description='Actual processed source duration in milliseconds, from transcription. Zero leaves it unspecified.')] = 0,
+        source_transcript: Annotated[str, Field(description='Original transcript text for synthesis context; empty omits it.')] = "",
+        speech_islands: Annotated[list[dict[str, int]] | None, Field(description='Optional speech timing ranges using integer start_ms and end_ms from detailed transcription.')] = None,
+        document_translation: Annotated[bool, Field(description='Whether synthesis is for document-translation narration.')] = False,
+        enterprise_long_form: Annotated[bool, Field(description='Request enterprise long-form processing only when allowed by get_audio_capabilities.')] = False,
     ) -> dict[str, Any]:
         """Synthesize multi-speaker audio/video with complete timing and review data.
 
@@ -303,12 +304,12 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def upload_subtitle(
-        file_path: str,
-        auto_localize: bool = False,
-        target_languages: list[str] | None = None,
-        context: str = "",
-        glossary: str = "",
-        source_language: str = "en",
+        file_path: Annotated[str, Field(description='Input file: local filesystem path in stdio, or an accessible public HTTPS URL on the hosted server.')],
+        auto_localize: Annotated[bool, Field(description='True also requests billed subtitle localization; requires target_languages.')] = False,
+        target_languages: Annotated[list[str] | None, Field(description='Target language codes for subtitle localization, for example ["fr", "ja"].')] = None,
+        context: Annotated[str, Field(description='Optional audience, purpose and surrounding context to guide localization.')] = "",
+        glossary: Annotated[str, Field(description='Optional glossary text to guide terminology for subtitle localization.')] = "",
+        source_language: Annotated[str, Field(description='Source language code for subtitle processing, for example "en".')] = "en",
     ) -> dict[str, Any]:
         """Upload and save a subtitle file; optionally localize it (billed).
 
@@ -339,10 +340,10 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def localize_subtitle_file(
-        storage_path: str,
-        target_languages: list[str],
-        context: str = "",
-        glossary: str = "",
+        storage_path: Annotated[str, Field(description='Exact saved subtitle storage key returned by upload_subtitle or list_subtitles; not a local path or HTTPS URL.')],
+        target_languages: Annotated[list[str], Field(description='Target language codes for subtitle localization, for example ["fr", "ja"].')],
+        context: Annotated[str, Field(description='Optional audience, purpose and surrounding context to guide localization.')] = "",
+        glossary: Annotated[str, Field(description='Optional glossary text to guide terminology for subtitle localization.')] = "",
     ) -> dict[str, Any]:
         """Localize an already saved ITT subtitle file (billed), using its storage path.
 
@@ -364,21 +365,21 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
         )
 
     @mcp.tool()
-    async def get_subtitle_download_url(storage_path: str) -> dict[str, Any]:
+    async def get_subtitle_download_url(storage_path: Annotated[str, Field(description='Exact saved subtitle storage key returned by upload_subtitle or list_subtitles; not a local path or HTTPS URL.')]) -> dict[str, Any]:
         """Get an expiring download URL for a saved subtitle's storage path."""
         return await get_client()._request(
             "GET", "/subtitle/download-url", params={"file_path": storage_path}
         )
 
     @mcp.tool(annotations={"destructiveHint": True, "idempotentHint": True})
-    async def delete_subtitle(storage_path: str) -> dict[str, Any]:
+    async def delete_subtitle(storage_path: Annotated[str, Field(description='Exact saved subtitle storage key returned by upload_subtitle or list_subtitles; not a local path or HTTPS URL.')]) -> dict[str, Any]:
         """Delete a saved subtitle belonging to the caller, when explicitly requested."""
         return await get_client()._request(
             "DELETE", "/subtitle/delete", params={"file_path": storage_path}
         )
 
     @mcp.tool()
-    async def get_subtitle_review(storage_path: str) -> dict[str, Any]:
+    async def get_subtitle_review(storage_path: Annotated[str, Field(description='Exact saved subtitle storage key returned by upload_subtitle or list_subtitles; not a local path or HTTPS URL.')]) -> dict[str, Any]:
         """Get saved subtitle QC rows, translations, rationales, and approval status."""
         return await get_client()._request(
             "GET", "/subtitle/qc/preview", params={"file_path": storage_path}
@@ -386,7 +387,7 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def update_subtitle_review(
-        storage_path: str, updates: list[dict[str, Any]]
+        storage_path: Annotated[str, Field(description='Exact saved subtitle storage key returned by upload_subtitle or list_subtitles; not a local path or HTTPS URL.')], updates: Annotated[list[dict[str, Any]], Field(description='Review edits with row_index from get_subtitle_review and translation, approved and/or rationale fields.')]
     ) -> dict[str, Any]:
         """Save subtitle review edits: rows with row_index, translation, approved, rationale.
 
@@ -403,11 +404,11 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def export_subtitle(
-        storage_path: str,
-        output_path: str,
-        qc: bool = False,
-        regenerate: bool = False,
-        source_language: str = "en",
+        storage_path: Annotated[str, Field(description='Exact saved subtitle storage key returned by upload_subtitle or list_subtitles; not a local path or HTTPS URL.')],
+        output_path: Annotated[str, Field(description='Output filename/path in stdio, or filename for the temporary hosted download. Use the matching file extension.')],
+        qc: Annotated[bool, Field(description='True exports the review XLSX; false exports the subtitle in its original format.')] = False,
+        regenerate: Annotated[bool, Field(description='True applies saved subtitle review edits before exporting.')] = False,
+        source_language: Annotated[str, Field(description='Source language code for subtitle processing, for example "en".')] = "en",
     ) -> dict[str, Any]:
         """Export a saved subtitle or its QC workbook as a file/download URL.
 
@@ -428,13 +429,13 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def list_translation_memory_entries(
-        source_language_code: str = "",
-        target_language_code: str = "",
-        information_source: str = "",
-        search: str = "",
-        enabled_only: bool = False,
-        limit: int = 100,
-        offset: int = 0,
+        source_language_code: Annotated[str, Field(description='Source language code, for example "en"; empty omits the optional language hint/filter.')] = "",
+        target_language_code: Annotated[str, Field(description='Target language code, for example "fr" or "ja".')] = "",
+        information_source: Annotated[str, Field(description='Optional translation-memory information_source filter; empty includes all sources.')] = "",
+        search: Annotated[str, Field(description='Optional text filter for translation-memory entries; empty disables this filter.')] = "",
+        enabled_only: Annotated[bool, Field(description='True lists only enabled translation-memory entries.')] = False,
+        limit: Annotated[int, Field(description='Maximum entries per page, 1–1000.')] = 100,
+        offset: Annotated[int, Field(description='Number of entries to skip, zero or greater.')] = 0,
     ) -> dict[str, Any]:
         """List and paginate translation memory entries, including IDs for editing."""
         if not 1 <= limit <= 1000 or offset < 0:
@@ -456,9 +457,9 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def update_translation_memory_entry(
-        entry_id: str,
-        target_text: str | None = None,
-        enabled: bool | None = None,
+        entry_id: Annotated[str, Field(description='Exact translation-memory entry ID returned by list_translation_memory_entries.')],
+        target_text: Annotated[str | None, Field(description='Translated wording for the memory entry; omit/null on updates to leave it unchanged.')] = None,
+        enabled: Annotated[bool | None, Field(description='Whether this entry is enabled for future translations; null leaves it unchanged.')] = None,
     ) -> dict[str, Any]:
         """Edit an approved TM translation or enable/disable it for future translations."""
         return await get_client()._request(
@@ -468,7 +469,7 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
         )
 
     @mcp.tool(annotations={"destructiveHint": True, "idempotentHint": True})
-    async def delete_translation_memory_entry(entry_id: str) -> dict[str, Any]:
+    async def delete_translation_memory_entry(entry_id: Annotated[str, Field(description='Exact translation-memory entry ID returned by list_translation_memory_entries.')]) -> dict[str, Any]:
         """Delete a translation memory entry, when explicitly requested."""
         return await get_client()._request(
             "DELETE", "/master-tm/entries/{entry_id}".format(entry_id=_id(entry_id))
@@ -491,10 +492,10 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def update_language_formality(
-        mapping_id: int,
-        formality: Literal[
+        mapping_id: Annotated[int, Field(description='Exact workspace language mapping ID returned by list_language_settings.')],
+        formality: Annotated[Literal[
             "very_informal", "informal", "neutral", "formal", "very_formal"
-        ],
+        ], Field(description='Formality override: very_informal, informal, neutral, formal or very_formal. Empty uses workspace defaults.')],
     ) -> dict[str, Any]:
         """Change the saved formality for a mapping from list_language_settings.
 
@@ -509,7 +510,7 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def update_language_custom_style(
-        mapping_id: int, custom_style: str | None
+        mapping_id: Annotated[int, Field(description='Exact workspace language mapping ID returned by list_language_settings.')], custom_style: Annotated[str | None, Field(description='Custom style instructions for this language mapping.')]
     ) -> dict[str, Any]:
         """Set saved per-language style instructions, or clear them with null.
 
@@ -537,7 +538,7 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def create_style_guide(
-        title: str, content: str, is_enabled: bool = True
+        title: Annotated[str, Field(description='Style-guide title; omit/null on updates to leave it unchanged.')], content: Annotated[str, Field(description='Style-guide instructions; omit/null on updates to leave them unchanged.')], is_enabled: Annotated[bool, Field(description='Whether the style guide is enabled; omit/null on updates to leave it unchanged.')] = True
     ) -> dict[str, Any]:
         """Create and save a workspace style guide used by future translations."""
         return await get_client()._request(
@@ -548,10 +549,10 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def update_style_guide(
-        guide_id: str,
-        title: str | None = None,
-        content: str | None = None,
-        is_enabled: bool | None = None,
+        guide_id: Annotated[str, Field(description='Exact style-guide ID returned by list_style_guides.')],
+        title: Annotated[str | None, Field(description='Style-guide title; omit/null on updates to leave it unchanged.')] = None,
+        content: Annotated[str | None, Field(description='Style-guide instructions; omit/null on updates to leave them unchanged.')] = None,
+        is_enabled: Annotated[bool | None, Field(description='Whether the style guide is enabled; omit/null on updates to leave it unchanged.')] = None,
     ) -> dict[str, Any]:
         """Edit, enable or disable an existing workspace style guide."""
         return await get_client()._request(
@@ -561,14 +562,14 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
         )
 
     @mcp.tool(annotations={"destructiveHint": True, "idempotentHint": True})
-    async def delete_style_guide(guide_id: str) -> dict[str, Any]:
+    async def delete_style_guide(guide_id: Annotated[str, Field(description='Exact style-guide ID returned by list_style_guides.')]) -> dict[str, Any]:
         """Delete a workspace style guide, when explicitly requested."""
         return await get_client()._request(
             "DELETE", "/style-guide/{guide_id}".format(guide_id=_id(guide_id))
         )
 
     @mcp.tool()
-    async def upload_style_guide(file_path: str, title: str = "") -> dict[str, Any]:
+    async def upload_style_guide(file_path: Annotated[str, Field(description='Input file: local filesystem path in stdio, or an accessible public HTTPS URL on the hosted server.')], title: Annotated[str, Field(description='Style-guide title; omit/null on updates to leave it unchanged.')] = "") -> dict[str, Any]:
         """Create a workspace style guide from a .txt or .docx file.
 
         File input is a local path (stdio) or public HTTPS URL (hosted).
@@ -581,7 +582,7 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
         )
 
     @mcp.tool()
-    async def reorder_style_guides(guide_ids: list[str]) -> dict[str, Any]:
+    async def reorder_style_guides(guide_ids: Annotated[list[str], Field(description='Non-empty ordered list of unique style-guide IDs from list_style_guides.')]) -> dict[str, Any]:
         """Save the order of workspace style guides using IDs from list_style_guides."""
         if not guide_ids or len(set(guide_ids)) != len(guide_ids):
             raise ValueError("Provide a non-empty list of unique guide IDs.")
@@ -591,11 +592,11 @@ def register_workflow_tools(mcp: MCPServer, get_client: Any) -> None:
 
     @mcp.tool()
     async def submit_translation_feedback(
-        source: str | None = None,
-        result: str | None = None,
-        language: str | None = None,
-        feedback: str | None = None,
-        approved: bool | None = None,
+        source: Annotated[str | None, Field(description='Original text associated with this translation feedback.')] = None,
+        result: Annotated[str | None, Field(description='Translated text associated with this feedback.')] = None,
+        language: Annotated[str | None, Field(description='Target language for this operation, for example "French".')] = None,
+        feedback: Annotated[str | None, Field(description='User feedback about this translation.')] = None,
+        approved: Annotated[bool | None, Field(description='User approval state; saving approved memory requires explicit approval of the exact wording.')] = None,
     ) -> dict[str, Any]:
         """Save user feedback or an approval rating for a translation.
 

@@ -45,8 +45,13 @@ def input_schema(tool: Any) -> dict:
             # Optional file arguments use an empty string for absence.
             prop["pattern"] = r"^https://" if name in schema.get("required", []) else r"^(https://|$)"
         if name in ARRAY_FIELDS.get(tool.name, {}):
+            description = (
+                "Image text replacements as an array of original/translated pairs."
+                if name == "replacements" else
+                "Speech segments as an array with text and optional start_ms, end_ms and original text."
+            )
             prop.clear()
-            prop.update({"type": "array", "minItems": 1, "items": ARRAY_FIELDS[tool.name][name]})
+            prop.update({"type": "array", "minItems": 1, "items": ARRAY_FIELDS[tool.name][name], "description": description})
     return schema
 
 

@@ -1,0 +1,2339 @@
+{
+  "mcp": [
+    {
+      "name": "translate",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "target_language": {
+            "title": "Target Language",
+            "type": "string"
+          },
+          "target_language_code": {
+            "default": "",
+            "title": "Target Language Code",
+            "type": "string"
+          },
+          "source_language": {
+            "default": "English",
+            "title": "Source Language",
+            "type": "string"
+          },
+          "source_language_code": {
+            "default": "en",
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "context": {
+            "default": "",
+            "title": "Context",
+            "type": "string"
+          },
+          "glossary": {
+            "default": "",
+            "title": "Glossary",
+            "type": "string"
+          },
+          "formality": {
+            "default": "",
+            "title": "Formality",
+            "type": "string"
+          },
+          "max_characters": {
+            "default": 0,
+            "title": "Max Characters",
+            "type": "integer"
+          },
+          "backtranslate": {
+            "default": false,
+            "title": "Backtranslate",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "text",
+          "target_language"
+        ],
+        "title": "translateArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "translateOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "translate_batch",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "texts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Texts",
+            "type": "array"
+          },
+          "target_language": {
+            "title": "Target Language",
+            "type": "string"
+          },
+          "target_language_code": {
+            "default": "",
+            "title": "Target Language Code",
+            "type": "string"
+          },
+          "source_language": {
+            "default": "English",
+            "title": "Source Language",
+            "type": "string"
+          },
+          "source_language_code": {
+            "default": "en",
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "context": {
+            "default": "",
+            "title": "Context",
+            "type": "string"
+          },
+          "formality": {
+            "default": "",
+            "title": "Formality",
+            "type": "string"
+          }
+        },
+        "required": [
+          "texts",
+          "target_language"
+        ],
+        "title": "translate_batchArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "translate_batchOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "search_translation_memory",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "source_language_code": {
+            "default": "en",
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "target_language_code": {
+            "default": "",
+            "title": "Target Language Code",
+            "type": "string"
+          },
+          "min_score": {
+            "default": 0.0,
+            "title": "Min Score",
+            "type": "number"
+          },
+          "limit": {
+            "default": 10,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "search_translation_memoryArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "search_translation_memoryOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "add_translation_memory_entry",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_text": {
+            "title": "Source Text",
+            "type": "string"
+          },
+          "target_text": {
+            "title": "Target Text",
+            "type": "string"
+          },
+          "source_language_code": {
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "target_language_code": {
+            "title": "Target Language Code",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_text",
+          "target_text",
+          "source_language_code",
+          "target_language_code"
+        ],
+        "title": "add_translation_memory_entryArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "add_translation_memory_entryOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_languages",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_languagesArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_languagesOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_translation_memory_stats",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_translation_memory_statsArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_translation_memory_statsOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_style_guides",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_style_guidesArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_style_guidesOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_brand_voice",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_brand_voiceArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_brand_voiceOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "extract_image_text",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "image_path": {
+            "title": "Image Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image_path"
+        ],
+        "title": "extract_image_textArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "extract_image_textOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "localize_image",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "image_path": {
+            "title": "Image Path",
+            "type": "string"
+          },
+          "replacements": {
+            "title": "Replacements",
+            "type": "string"
+          },
+          "target_language_code": {
+            "title": "Target Language Code",
+            "type": "string"
+          },
+          "output_path": {
+            "default": "",
+            "title": "Output Path",
+            "type": "string"
+          },
+          "num_images": {
+            "default": 1,
+            "title": "Num Images",
+            "type": "integer"
+          },
+          "output_format": {
+            "default": "png",
+            "title": "Output Format",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image_path",
+          "replacements",
+          "target_language_code"
+        ],
+        "title": "localize_imageArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "localize_imageOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "check_image_cultural_fit",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "image_path": {
+            "title": "Image Path",
+            "type": "string"
+          },
+          "countries": {
+            "default": "",
+            "title": "Countries",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image_path"
+        ],
+        "title": "check_image_cultural_fitArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "check_image_cultural_fitOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "transcribe_audio",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "title": "File Path",
+            "type": "string"
+          },
+          "source_language_code": {
+            "default": "",
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "keep_background_music": {
+            "default": false,
+            "title": "Keep Background Music",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "file_path"
+        ],
+        "title": "transcribe_audioArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "transcribe_audioOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "parse_audio_script",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "title": "File Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_path"
+        ],
+        "title": "parse_audio_scriptArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "parse_audio_scriptOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_voices",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "language_code": {
+            "default": "",
+            "title": "Language Code",
+            "type": "string"
+          }
+        },
+        "title": "list_voicesArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_voicesOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "preview_voice",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "voice_id": {
+            "title": "Voice Id",
+            "type": "string"
+          },
+          "output_path": {
+            "default": "preview.wav",
+            "title": "Output Path",
+            "type": "string"
+          },
+          "language_code": {
+            "default": "",
+            "title": "Language Code",
+            "type": "string"
+          },
+          "text": {
+            "default": "",
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "voice_id"
+        ],
+        "title": "preview_voiceArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "preview_voiceOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_voice_consent_script",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "language_code": {
+            "default": "",
+            "title": "Language Code",
+            "type": "string"
+          }
+        },
+        "title": "get_voice_consent_scriptArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_voice_consent_scriptOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "synthesize_audio",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
+          "language_code": {
+            "title": "Language Code",
+            "type": "string"
+          },
+          "voice_id": {
+            "title": "Voice Id",
+            "type": "string"
+          },
+          "segments": {
+            "title": "Segments",
+            "type": "string"
+          },
+          "output_path": {
+            "default": "dubbed.wav",
+            "title": "Output Path",
+            "type": "string"
+          },
+          "keep_same_length": {
+            "default": false,
+            "title": "Keep Same Length",
+            "type": "boolean"
+          },
+          "keep_background_music": {
+            "default": false,
+            "title": "Keep Background Music",
+            "type": "boolean"
+          },
+          "stem_id": {
+            "default": "",
+            "title": "Stem Id",
+            "type": "string"
+          },
+          "source_duration_ms": {
+            "default": 0,
+            "title": "Source Duration Ms",
+            "type": "integer"
+          },
+          "source_transcript": {
+            "default": "",
+            "title": "Source Transcript",
+            "type": "string"
+          },
+          "video_id": {
+            "default": "",
+            "title": "Video Id",
+            "type": "string"
+          },
+          "video_output_path": {
+            "default": "",
+            "title": "Video Output Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "language",
+          "language_code",
+          "voice_id",
+          "segments"
+        ],
+        "title": "synthesize_audioArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "synthesize_audioOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "register_video",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "title": "File Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_path"
+        ],
+        "title": "register_videoArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "register_videoOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "remux_video",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "video_id": {
+            "title": "Video Id",
+            "type": "string"
+          },
+          "audio_path": {
+            "title": "Audio Path",
+            "type": "string"
+          },
+          "output_path": {
+            "default": "dubbed.mp4",
+            "title": "Output Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "video_id",
+          "audio_path"
+        ],
+        "title": "remux_videoArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "remux_videoOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "parse_subtitle",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "title": "File Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_path"
+        ],
+        "title": "parse_subtitleArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "parse_subtitleOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "localize_subtitles",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_language_codes": {
+            "title": "Target Language Codes",
+            "type": "string"
+          },
+          "subtitle_path": {
+            "default": "",
+            "title": "Subtitle Path",
+            "type": "string"
+          },
+          "video_path": {
+            "default": "",
+            "title": "Video Path",
+            "type": "string"
+          },
+          "glossary_path": {
+            "default": "",
+            "title": "Glossary Path",
+            "type": "string"
+          },
+          "source_language_code": {
+            "default": "en",
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "context": {
+            "default": "",
+            "title": "Context",
+            "type": "string"
+          },
+          "formality": {
+            "default": "",
+            "title": "Formality",
+            "type": "string"
+          },
+          "output_dir": {
+            "default": "",
+            "title": "Output Dir",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target_language_codes"
+        ],
+        "title": "localize_subtitlesArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "localize_subtitlesOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "clone_voice",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "reference_path": {
+            "title": "Reference Path",
+            "type": "string"
+          },
+          "consent_path": {
+            "title": "Consent Path",
+            "type": "string"
+          },
+          "confirm_ownership": {
+            "default": false,
+            "title": "Confirm Ownership",
+            "type": "boolean"
+          },
+          "language_code": {
+            "default": "",
+            "title": "Language Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference_path",
+          "consent_path"
+        ],
+        "title": "clone_voiceArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "clone_voiceDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_byo_voice",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "reference_path": {
+            "title": "Reference Path",
+            "type": "string"
+          },
+          "confirm_ownership": {
+            "default": false,
+            "title": "Confirm Ownership",
+            "type": "boolean"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "language_code": {
+            "default": "",
+            "title": "Language Code",
+            "type": "string"
+          },
+          "clip_reference": {
+            "default": false,
+            "title": "Clip Reference",
+            "type": "boolean"
+          },
+          "consent_path": {
+            "default": "",
+            "title": "Consent Path",
+            "type": "string"
+          },
+          "clip_ranges": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Clip Ranges"
+          }
+        },
+        "required": [
+          "reference_path"
+        ],
+        "title": "create_byo_voiceArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "create_byo_voiceDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_saved_voice",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "voice_id": {
+            "title": "Voice Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "voice_id"
+        ],
+        "title": "delete_saved_voiceArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "delete_saved_voiceDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "destructive_hint": true,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "get_audio_capabilities",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_audio_capabilitiesArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "get_audio_capabilitiesDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "transcribe_audio_detailed",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "title": "File Path",
+            "type": "string"
+          },
+          "source_language_code": {
+            "default": "",
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "keep_background_music": {
+            "default": false,
+            "title": "Keep Background Music",
+            "type": "boolean"
+          },
+          "speaker_count": {
+            "default": 1,
+            "title": "Speaker Count",
+            "type": "integer"
+          },
+          "enterprise_long_form": {
+            "default": false,
+            "title": "Enterprise Long Form",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "file_path"
+        ],
+        "title": "transcribe_audio_detailedArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "transcribe_audio_detailedDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "translate_dialogue",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "segments": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Segments",
+            "type": "array"
+          },
+          "source_language": {
+            "default": "English",
+            "title": "Source Language",
+            "type": "string"
+          },
+          "source_language_code": {
+            "default": "en",
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "context": {
+            "default": "",
+            "title": "Context",
+            "type": "string"
+          },
+          "formality": {
+            "default": "",
+            "title": "Formality",
+            "type": "string"
+          },
+          "speakers": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Speakers"
+          }
+        },
+        "required": [
+          "segments"
+        ],
+        "title": "translate_dialogueArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "translate_dialogueDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "synthesize_audio_advanced",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
+          "language_code": {
+            "title": "Language Code",
+            "type": "string"
+          },
+          "voice_id": {
+            "title": "Voice Id",
+            "type": "string"
+          },
+          "segments": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Segments",
+            "type": "array"
+          },
+          "output_path": {
+            "default": "dubbed.wav",
+            "title": "Output Path",
+            "type": "string"
+          },
+          "video_output_path": {
+            "default": "",
+            "title": "Video Output Path",
+            "type": "string"
+          },
+          "speaker_voices": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Speaker Voices"
+          },
+          "keep_same_length": {
+            "default": false,
+            "title": "Keep Same Length",
+            "type": "boolean"
+          },
+          "keep_background_music": {
+            "default": false,
+            "title": "Keep Background Music",
+            "type": "boolean"
+          },
+          "stem_id": {
+            "default": "",
+            "title": "Stem Id",
+            "type": "string"
+          },
+          "video_id": {
+            "default": "",
+            "title": "Video Id",
+            "type": "string"
+          },
+          "source_duration_ms": {
+            "default": 0,
+            "title": "Source Duration Ms",
+            "type": "integer"
+          },
+          "source_transcript": {
+            "default": "",
+            "title": "Source Transcript",
+            "type": "string"
+          },
+          "speech_islands": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Speech Islands"
+          },
+          "document_translation": {
+            "default": false,
+            "title": "Document Translation",
+            "type": "boolean"
+          },
+          "enterprise_long_form": {
+            "default": false,
+            "title": "Enterprise Long Form",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "language",
+          "language_code",
+          "voice_id",
+          "segments"
+        ],
+        "title": "synthesize_audio_advancedArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "synthesize_audio_advancedDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "upload_subtitle",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "title": "File Path",
+            "type": "string"
+          },
+          "auto_localize": {
+            "default": false,
+            "title": "Auto Localize",
+            "type": "boolean"
+          },
+          "target_languages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Target Languages"
+          },
+          "context": {
+            "default": "",
+            "title": "Context",
+            "type": "string"
+          },
+          "glossary": {
+            "default": "",
+            "title": "Glossary",
+            "type": "string"
+          },
+          "source_language": {
+            "default": "en",
+            "title": "Source Language",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_path"
+        ],
+        "title": "upload_subtitleArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "upload_subtitleDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_subtitles",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "list_subtitlesArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "list_subtitlesDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "localize_subtitle_file",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "storage_path": {
+            "title": "Storage Path",
+            "type": "string"
+          },
+          "target_languages": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Target Languages",
+            "type": "array"
+          },
+          "context": {
+            "default": "",
+            "title": "Context",
+            "type": "string"
+          },
+          "glossary": {
+            "default": "",
+            "title": "Glossary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "storage_path",
+          "target_languages"
+        ],
+        "title": "localize_subtitle_fileArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "localize_subtitle_fileDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "get_subtitle_download_url",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "storage_path": {
+            "title": "Storage Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "storage_path"
+        ],
+        "title": "get_subtitle_download_urlArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "get_subtitle_download_urlDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_subtitle",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "storage_path": {
+            "title": "Storage Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "storage_path"
+        ],
+        "title": "delete_subtitleArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "delete_subtitleDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "destructive_hint": true,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "get_subtitle_review",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "storage_path": {
+            "title": "Storage Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "storage_path"
+        ],
+        "title": "get_subtitle_reviewArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "get_subtitle_reviewDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_subtitle_review",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "storage_path": {
+            "title": "Storage Path",
+            "type": "string"
+          },
+          "updates": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Updates",
+            "type": "array"
+          }
+        },
+        "required": [
+          "storage_path",
+          "updates"
+        ],
+        "title": "update_subtitle_reviewArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "update_subtitle_reviewDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "export_subtitle",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "storage_path": {
+            "title": "Storage Path",
+            "type": "string"
+          },
+          "output_path": {
+            "title": "Output Path",
+            "type": "string"
+          },
+          "qc": {
+            "default": false,
+            "title": "Qc",
+            "type": "boolean"
+          },
+          "regenerate": {
+            "default": false,
+            "title": "Regenerate",
+            "type": "boolean"
+          },
+          "source_language": {
+            "default": "en",
+            "title": "Source Language",
+            "type": "string"
+          }
+        },
+        "required": [
+          "storage_path",
+          "output_path"
+        ],
+        "title": "export_subtitleArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "export_subtitleDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_translation_memory_entries",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_language_code": {
+            "default": "",
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "target_language_code": {
+            "default": "",
+            "title": "Target Language Code",
+            "type": "string"
+          },
+          "information_source": {
+            "default": "",
+            "title": "Information Source",
+            "type": "string"
+          },
+          "search": {
+            "default": "",
+            "title": "Search",
+            "type": "string"
+          },
+          "enabled_only": {
+            "default": false,
+            "title": "Enabled Only",
+            "type": "boolean"
+          },
+          "limit": {
+            "default": 100,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          }
+        },
+        "title": "list_translation_memory_entriesArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "list_translation_memory_entriesDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_translation_memory_entry",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "entry_id": {
+            "title": "Entry Id",
+            "type": "string"
+          },
+          "target_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Target Text"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Enabled"
+          }
+        },
+        "required": [
+          "entry_id"
+        ],
+        "title": "update_translation_memory_entryArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "update_translation_memory_entryDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_translation_memory_entry",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "entry_id": {
+            "title": "Entry Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry_id"
+        ],
+        "title": "delete_translation_memory_entryArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "delete_translation_memory_entryDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "destructive_hint": true,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "list_language_settings",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "list_language_settingsArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "list_language_settingsDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "read_only_hint": true
+      }
+    },
+    {
+      "name": "get_language_formality_options",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_language_formality_optionsArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "get_language_formality_optionsDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_language_formality",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "mapping_id": {
+            "title": "Mapping Id",
+            "type": "integer"
+          },
+          "formality": {
+            "enum": [
+              "very_informal",
+              "informal",
+              "neutral",
+              "formal",
+              "very_formal"
+            ],
+            "title": "Formality",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mapping_id",
+          "formality"
+        ],
+        "title": "update_language_formalityArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "update_language_formalityDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_language_custom_style",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "mapping_id": {
+            "title": "Mapping Id",
+            "type": "integer"
+          },
+          "custom_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Style"
+          }
+        },
+        "required": [
+          "mapping_id",
+          "custom_style"
+        ],
+        "title": "update_language_custom_styleArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "update_language_custom_styleDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "list_style_guides",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "list_style_guidesArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "list_style_guidesDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "read_only_hint": true
+      }
+    },
+    {
+      "name": "get_combined_prompt",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_combined_promptArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "get_combined_promptDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "create_style_guide",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "is_enabled": {
+            "default": true,
+            "title": "Is Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "title",
+          "content"
+        ],
+        "title": "create_style_guideArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "create_style_guideDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "update_style_guide",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "guide_id": {
+            "title": "Guide Id",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Title"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Content"
+          },
+          "is_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Is Enabled"
+          }
+        },
+        "required": [
+          "guide_id"
+        ],
+        "title": "update_style_guideArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "update_style_guideDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "delete_style_guide",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "guide_id": {
+            "title": "Guide Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "guide_id"
+        ],
+        "title": "delete_style_guideArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "delete_style_guideDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "destructive_hint": true,
+        "idempotent_hint": true
+      }
+    },
+    {
+      "name": "upload_style_guide",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "title": "File Path",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_path"
+        ],
+        "title": "upload_style_guideArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "upload_style_guideDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "reorder_style_guides",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "guide_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Guide Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "guide_ids"
+        ],
+        "title": "reorder_style_guidesArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "reorder_style_guidesDictOutput",
+        "type": "object"
+      }
+    },
+    {
+      "name": "submit_translation_feedback",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Result"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Language"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Feedback"
+          },
+          "approved": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Approved"
+          }
+        },
+        "title": "submit_translation_feedbackArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "submit_translation_feedbackDictOutput",
+        "type": "object"
+      }
+    }
+  ],
+  "plugin": [
+    {
+      "name": "get_localization_context",
+      "title": "Read Nativ brand and language context",
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_localization_contextArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "get_localization_contextDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": false
+      },
+      "meta": {
+        "securitySchemes": [
+          {
+            "type": "oauth2",
+            "scopes": [
+              "nativ:localize"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "localize_text",
+      "title": "Localise campaign copy",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          },
+          "target_language": {
+            "title": "Target Language",
+            "type": "string"
+          },
+          "target_language_code": {
+            "title": "Target Language Code",
+            "type": "string"
+          },
+          "source_language": {
+            "default": "English",
+            "title": "Source Language",
+            "type": "string"
+          },
+          "source_language_code": {
+            "default": "en",
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "context": {
+            "default": "",
+            "title": "Context",
+            "type": "string"
+          },
+          "formality": {
+            "default": "",
+            "title": "Formality",
+            "type": "string"
+          },
+          "max_characters": {
+            "default": 0,
+            "maximum": 50000,
+            "minimum": 0,
+            "title": "Max Characters",
+            "type": "integer"
+          },
+          "backtranslate": {
+            "default": true,
+            "title": "Backtranslate",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "text",
+          "target_language",
+          "target_language_code"
+        ],
+        "title": "localize_textArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "localize_textDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "read_only_hint": false,
+        "destructive_hint": false,
+        "idempotent_hint": false,
+        "open_world_hint": false
+      },
+      "meta": {
+        "securitySchemes": [
+          {
+            "type": "oauth2",
+            "scopes": [
+              "nativ:localize"
+            ]
+          }
+        ],
+        "ui": {
+          "resourceUri": "ui://nativ/localization-review-v3.html"
+        },
+        "openai/outputTemplate": "ui://nativ/localization-review-v3.html"
+      }
+    },
+    {
+      "name": "localize_campaign",
+      "title": "Localise related campaign strings",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "texts": {
+            "items": {
+              "maxLength": 50000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Texts",
+            "type": "array"
+          },
+          "target_language": {
+            "title": "Target Language",
+            "type": "string"
+          },
+          "target_language_code": {
+            "title": "Target Language Code",
+            "type": "string"
+          },
+          "context": {
+            "default": "",
+            "title": "Context",
+            "type": "string"
+          },
+          "source_language": {
+            "default": "English",
+            "title": "Source Language",
+            "type": "string"
+          },
+          "source_language_code": {
+            "default": "en",
+            "title": "Source Language Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "texts",
+          "target_language",
+          "target_language_code"
+        ],
+        "title": "localize_campaignArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "localize_campaignDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "read_only_hint": false,
+        "destructive_hint": false,
+        "idempotent_hint": false,
+        "open_world_hint": false
+      },
+      "meta": {
+        "securitySchemes": [
+          {
+            "type": "oauth2",
+            "scopes": [
+              "nativ:localize"
+            ]
+          }
+        ],
+        "ui": {
+          "resourceUri": "ui://nativ/localization-review-v3.html"
+        },
+        "openai/outputTemplate": "ui://nativ/localization-review-v3.html"
+      }
+    },
+    {
+      "name": "search_approved_memory",
+      "title": "Search approved translation memory",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "source_language_code": {
+            "default": "en",
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "target_language_code": {
+            "default": "",
+            "title": "Target Language Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "search_approved_memoryArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "search_approved_memoryDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": false
+      },
+      "meta": {
+        "securitySchemes": [
+          {
+            "type": "oauth2",
+            "scopes": [
+              "nativ:localize"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "save_approved_translation",
+      "title": "Save explicitly approved wording",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "source_text": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Source Text",
+            "type": "string"
+          },
+          "target_text": {
+            "maxLength": 50000,
+            "minLength": 1,
+            "title": "Target Text",
+            "type": "string"
+          },
+          "source_language_code": {
+            "title": "Source Language Code",
+            "type": "string"
+          },
+          "target_language_code": {
+            "title": "Target Language Code",
+            "type": "string"
+          },
+          "approved": {
+            "default": false,
+            "title": "Approved",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "source_text",
+          "target_text",
+          "source_language_code",
+          "target_language_code"
+        ],
+        "title": "save_approved_translationArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "save_approved_translationDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "read_only_hint": false,
+        "destructive_hint": false,
+        "idempotent_hint": false,
+        "open_world_hint": false
+      },
+      "meta": {
+        "securitySchemes": [
+          {
+            "type": "oauth2",
+            "scopes": [
+              "nativ:localize"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "extract_creative_text",
+      "title": "Extract text from a creative",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "image_url": {
+            "title": "Image Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image_url"
+        ],
+        "title": "extract_creative_textArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "extract_creative_textDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "read_only_hint": true,
+        "destructive_hint": false,
+        "idempotent_hint": true,
+        "open_world_hint": true
+      },
+      "meta": {
+        "securitySchemes": [
+          {
+            "type": "oauth2",
+            "scopes": [
+              "nativ:localize"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "localize_creative",
+      "title": "Localise a campaign creative",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "image_url": {
+            "title": "Image Url",
+            "type": "string"
+          },
+          "replacements": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "Replacements",
+            "type": "array"
+          },
+          "target_language_code": {
+            "title": "Target Language Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image_url",
+          "replacements",
+          "target_language_code"
+        ],
+        "title": "localize_creativeArguments"
+      },
+      "output_schema": {
+        "additionalProperties": true,
+        "title": "localize_creativeDictOutput",
+        "type": "object"
+      },
+      "annotations": {
+        "read_only_hint": false,
+        "destructive_hint": false,
+        "idempotent_hint": false,
+        "open_world_hint": true
+      },
+      "meta": {
+        "securitySchemes": [
+          {
+            "type": "oauth2",
+            "scopes": [
+              "nativ:localize"
+            ]
+          }
+        ],
+        "ui": {
+          "resourceUri": "ui://nativ/localization-review-v3.html"
+        },
+        "openai/outputTemplate": "ui://nativ/localization-review-v3.html"
+      }
+    }
+  ]
+}

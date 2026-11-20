@@ -16,9 +16,10 @@ import uuid
 import httpx
 from mcp.server.mcpserver.exceptions import ToolError
 from urllib.parse import urlparse
-from typing import Any
+from typing import Annotated, Any
 
 from mcp.server import MCPServer
+from pydantic import Field
 
 from nativ_mcp.client import NativClient
 from nativ_mcp.files import read_file as _read_local_file, read_image as _read_local_image
@@ -86,16 +87,16 @@ mcp = MCPServer(
 
 @mcp.tool()
 async def translate(
-    text: str,
-    target_language: str,
-    target_language_code: str = "",
-    source_language: str = "English",
-    source_language_code: str = "en",
-    context: str = "",
-    glossary: str = "",
-    formality: str = "",
-    max_characters: int = 0,
-    backtranslate: bool = False,
+    text: Annotated[str, Field(description='The text to translate.')],
+    target_language: Annotated[str, Field(description='Full target language name (e.g. "French", "German", "Japanese").')],
+    target_language_code: Annotated[str, Field(description='Optional ISO language code (e.g. "fr", "de", "ja").')] = "",
+    source_language: Annotated[str, Field(description='Source language name. Defaults to English.')] = "English",
+    source_language_code: Annotated[str, Field(description='Source language code. Defaults to "en".')] = "en",
+    context: Annotated[str, Field(description='Optional context to guide the translation (e.g. "marketing headline for Gen Z audience").')] = "",
+    glossary: Annotated[str, Field(description='Optional inline glossary as CSV (e.g. "term,translation\\nbrand,marque").')] = "",
+    formality: Annotated[str, Field(description='Tone override — one of: very_informal, informal, neutral, formal, very_formal.')] = "",
+    max_characters: Annotated[int, Field(description='Optional strict character limit for the translation output.')] = 0,
+    backtranslate: Annotated[bool, Field(description='If true, also returns a back-translation to verify intent.')] = False,
 ) -> str:
     """Translate text using Nativ's AI localization engine.
 
@@ -148,13 +149,13 @@ async def translate(
 
 @mcp.tool()
 async def translate_batch(
-    texts: list[str],
-    target_language: str,
-    target_language_code: str = "",
-    source_language: str = "English",
-    source_language_code: str = "en",
-    context: str = "",
-    formality: str = "",
+    texts: Annotated[list[str], Field(description='List of texts to translate.')],
+    target_language: Annotated[str, Field(description='Full target language name (e.g. "French").')],
+    target_language_code: Annotated[str, Field(description='Optional ISO language code.')] = "",
+    source_language: Annotated[str, Field(description='Source language name. Defaults to English.')] = "English",
+    source_language_code: Annotated[str, Field(description='Source language code. Defaults to "en".')] = "en",
+    context: Annotated[str, Field(description='Optional context to guide all translations.')] = "",
+    formality: Annotated[str, Field(description='Tone override for all translations.')] = "",
 ) -> str:
     """Translate multiple texts to a single target language.
 
@@ -207,11 +208,11 @@ async def translate_batch(
 
 @mcp.tool()
 async def search_translation_memory(
-    query: str,
-    source_language_code: str = "en",
-    target_language_code: str = "",
-    min_score: float = 0.0,
-    limit: int = 10,
+    query: Annotated[str, Field(description='Text to search for in the translation memory.')],
+    source_language_code: Annotated[str, Field(description='Source language code (default: "en").')] = "en",
+    target_language_code: Annotated[str, Field(description='Optional target language code to filter results.')] = "",
+    min_score: Annotated[float, Field(description='Minimum fuzzy match score (0-100). Default 0 returns all.')] = 0.0,
+    limit: Annotated[int, Field(description='Maximum number of results (default 10).')] = 10,
 ) -> str:
     """Search the translation memory for existing translations.
 
@@ -250,11 +251,11 @@ async def search_translation_memory(
 
 @mcp.tool()
 async def add_translation_memory_entry(
-    source_text: str,
-    target_text: str,
-    source_language_code: str,
-    target_language_code: str,
-    name: str = "",
+    source_text: Annotated[str, Field(description='The original text.')],
+    target_text: Annotated[str, Field(description='The approved translation.')],
+    source_language_code: Annotated[str, Field(description='Source language code (e.g. "en").')],
+    target_language_code: Annotated[str, Field(description='Target language code (e.g. "fr-FR").')],
+    name: Annotated[str, Field(description='Optional label for this entry (e.g. "homepage hero copy").')] = "",
 ) -> str:
     """Add a new entry to the translation memory.
 
@@ -385,7 +386,7 @@ async def get_brand_voice() -> str:
 
 
 @mcp.tool()
-async def extract_image_text(image_path: str) -> str:
+async def extract_image_text(image_path: Annotated[str, Field(description='Public HTTPS URL (hosted) or local path (stdio) to a PNG, JPEG, or WebP image file.')]) -> str:
     """Extract text segments from an image, in reading order (OCR).
 
     Use this as the first step when localizing an image: pull out the
@@ -411,12 +412,12 @@ async def extract_image_text(image_path: str) -> str:
 
 @mcp.tool()
 async def localize_image(
-    image_path: str,
-    replacements: str,
-    target_language_code: str,
-    output_path: str = "",
-    num_images: int = 1,
-    output_format: str = "png",
+    image_path: Annotated[str, Field(description='Public HTTPS URL (hosted) or local path (stdio) to a PNG, JPEG, or WebP image to localize.')],
+    replacements: Annotated[str, Field(description='JSON array of {"original": "...", "translated": "..."} pairs, e.g. \'[{"original": "Buy now", "translated": "Achetez maintenant"}]\'.')],
+    target_language_code: Annotated[str, Field(description='Target language code (e.g. "fr-FR"), used for labelling output.')],
+    output_path: Annotated[str, Field(description='Optional path to write the localized image to. Defaults to "<input>.<lang>.<format>" next to the source image.')] = "",
+    num_images: Annotated[int, Field(description='Number of variants to generate (1-5, default 1).')] = 1,
+    output_format: Annotated[str, Field(description='Output format — png, jpeg, or webp (default png).')] = "png",
 ) -> str:
     """Localize an image in place by replacing its on-image text with translations.
 
@@ -497,7 +498,7 @@ async def localize_image(
 
 
 @mcp.tool()
-async def check_image_cultural_fit(image_path: str, countries: str = "") -> str:
+async def check_image_cultural_fit(image_path: Annotated[str, Field(description='Public HTTPS URL (hosted) or local path (stdio) to a PNG, JPEG, or WebP image.')], countries: Annotated[str, Field(description='Optional comma-separated list of countries to check against (e.g. "Saudi Arabia, Japan, France"). Defaults to the top markets by GDP.')] = "") -> str:
     """Analyze an image for cultural-sensitivity issues across markets before launch.
 
     Returns a SAFE / NOT SAFE verdict and, where relevant, the specific

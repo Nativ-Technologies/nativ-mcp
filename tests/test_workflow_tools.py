@@ -6,6 +6,8 @@ import os
 import re
 import tempfile
 import unittest
+
+from test_parameter_descriptions import without_descriptions
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
@@ -152,7 +154,8 @@ class WorkflowTests(unittest.IsolatedAsyncioTestCase):
         for name, schemas in ORIGINAL.items():
             with self.subTest(tool=name):
                 self.assertEqual(
-                    {key: current[name].get(key) for key in schemas}, schemas
+                    without_descriptions({key: current[name].get(key) for key in schemas}),
+                    without_descriptions(schemas)
                 )
         self.assertEqual(len(current), 51)
 
